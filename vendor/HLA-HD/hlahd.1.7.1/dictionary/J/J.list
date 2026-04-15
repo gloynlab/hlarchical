@@ -1,0 +1,15 @@
+#Gene name	J
+#Alleles	9
+#Maxgene	3545
+#Maxnuc	1095
+#Exon	8	72	271	276	275	117	33	48	5
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6	exon7	exon8
+HLA02626	HLA-J*01:01:01:01	+	+	+	+	+	+	+	+	+	+
+HLA02629	HLA-J*01:01:01:02	+	+	+	+	+	+	+	+	+	+
+HLA02653	HLA-J*01:01:01:03	+	+	+	+	+	+	+	+	+	+
+HLA02630	HLA-J*01:01:01:04	+	+	+	+	+	+	+	+	+	+
+HLA02634	HLA-J*01:01:01:05	+	+	+	+	+	+	+	+	+	+
+HLA02632	HLA-J*01:01:01:06	+	+	+	+	+	+	+	+	+	+
+HLA02628	HLA-J*01:01:01:07	+	+	+	+	+	+	+	+	+	+
+HLA02631	HLA-J*01:01:01:08	+	+	+	+	+	+	+	+	+	+
+HLA02627	HLA-J*02:01	+	+	+	+	+	+	+	+	+	+

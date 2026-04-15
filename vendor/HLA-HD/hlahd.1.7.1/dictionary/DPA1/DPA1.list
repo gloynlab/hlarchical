@@ -1,0 +1,43 @@
+#Gene name	DPA1
+#Alleles	37
+#Maxgene	9775
+#Maxnuc	783
+#Exon	4	100	246	282	155
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4
+HLA00499	HLA-DPA1*01:03:01:01	+	+	+	+	+	+
+HLA06604	HLA-DPA1*01:03:01:02	+	+	+	+	+	+
+HLA06605	HLA-DPA1*01:03:01:03	+	+	+	+	+	+
+HLA06607	HLA-DPA1*01:03:01:04	+	+	+	+	+	+
+HLA06606	HLA-DPA1*01:03:01:05	+	+	+	+	+	+
+HLA00500	HLA-DPA1*01:03:02	-	-	-	+	-	-
+HLA01937	HLA-DPA1*01:03:03	-	-	-	+	-	-
+HLA03224	HLA-DPA1*01:03:04	-	-	-	+	-	-
+HLA00501	HLA-DPA1*01:04	-	-	-	+	+	+
+HLA00502	HLA-DPA1*01:05	-	-	-	+	-	-
+HLA00503	HLA-DPA1*01:06:01	-	-	-	+	-	-
+HLA03401	HLA-DPA1*01:06:02	-	-	-	+	-	-
+HLA01000	HLA-DPA1*01:07	-	-	-	+	-	-
+HLA01466	HLA-DPA1*01:08	-	-	-	+	-	-
+HLA02058	HLA-DPA1*01:09	-	-	-	+	-	-
+HLA03223	HLA-DPA1*01:10	-	-	-	+	-	-
+HLA07533	HLA-DPA1*01:11	-	-	-	+	-	-
+HLA09332	HLA-DPA1*01:12	-	-	-	+	-	-
+HLA00504	HLA-DPA1*02:01:01	-	-	+	+	+	+
+HLA00505	HLA-DPA1*02:01:02	-	-	-	+	-	-
+HLA00506	HLA-DPA1*02:01:03	-	-	-	+	-	-
+HLA00507	HLA-DPA1*02:01:04	-	-	-	+	-	-
+HLA01097	HLA-DPA1*02:01:05	-	-	-	+	-	-
+HLA01168	HLA-DPA1*02:01:06	-	-	+	+	+	-
+HLA03999	HLA-DPA1*02:01:07	-	-	-	+	-	-
+HLA00508	HLA-DPA1*02:02:01	-	-	-	+	+	+
+HLA00509	HLA-DPA1*02:02:02	-	-	-	+	+	+
+HLA01001	HLA-DPA1*02:02:03	-	-	-	+	-	-
+HLA07089	HLA-DPA1*02:02:04	-	-	-	+	-	-
+HLA08603	HLA-DPA1*02:02:05	-	-	-	+	-	-
+HLA00510	HLA-DPA1*02:03	-	-	-	+	-	-
+HLA03187	HLA-DPA1*02:04	-	-	-	+	-	-
+HLA08415	HLA-DPA1*02:05	-	-	-	+	-	-
+HLA00511	HLA-DPA1*03:01	-	-	-	+	+	+
+HLA00512	HLA-DPA1*03:02	-	-	-	+	-	-
+HLA01938	HLA-DPA1*03:03	-	-	-	+	-	-
+HLA00513	HLA-DPA1*04:01	-	-	-	+	+	+

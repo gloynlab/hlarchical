@@ -1,0 +1,8 @@
+#Gene name	DRB7
+#Alleles	2
+#Maxgene	0
+#Maxnuc	797
+#Exon	6	100	264	284	111	24	14
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6
+HLA00932	HLA-DRB7*01:01:01	-	+	+	+	+	+	+	+
+HLA00933	HLA-DRB7*01:01:02	-	-	-	+	-	-	-	-

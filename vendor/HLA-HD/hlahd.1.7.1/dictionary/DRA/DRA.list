@@ -1,0 +1,13 @@
+#Gene name	DRA
+#Alleles	7
+#Maxgene	5712
+#Maxnuc	765
+#Exon	4	82	246	282	155
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4
+HLA00662	HLA-DRA*01:01:01:01	+	+	+	+	+	+
+HLA06469	HLA-DRA*01:01:01:02	+	+	+	+	+	+
+HLA06470	HLA-DRA*01:01:01:03	+	+	+	+	+	+
+HLA06468	HLA-DRA*01:01:02	+	+	+	+	+	+
+HLA00663	HLA-DRA*01:02:01	-	-	-	+	+	+
+HLA01593	HLA-DRA*01:02:02	+	+	+	+	+	+
+HLA06454	HLA-DRA*01:02:03	+	+	+	+	+	+

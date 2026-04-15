@@ -1,0 +1,46 @@
+#Gene name	MICB
+#Alleles	40
+#Maxgene	12543
+#Maxnuc	1152
+#Exon	6	70	255	288	279	132	128
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6
+HLA02033	MICB*001	-	+	+	+	+	+	+	+
+HLA02059	MICB*002:01:01	+	+	+	+	+	+	+	+
+HLA02749	MICB*002:01:02	+	+	+	+	+	+	+	+
+HLA02060	MICB*003	+	+	+	+	+	+	+	+
+HLA02064	MICB*004:01:01	+	+	+	+	+	+	+	+
+HLA02750	MICB*004:01:02	+	+	+	+	+	+	+	+
+HLA02062	MICB*005:01	-	-	-	+	+	+	+	-
+HLA02061	MICB*005:02:01	+	+	+	+	+	+	+	+
+HLA02747	MICB*005:02:02	+	+	+	+	+	+	+	+
+HLA02748	MICB*005:02:03	+	+	+	+	+	+	+	+
+HLA02746	MICB*005:02:04	+	+	+	+	+	+	+	+
+HLA02067	MICB*005:03	-	-	-	+	+	+	+	+
+HLA02068	MICB*005:04	-	-	-	+	+	+	+	-
+HLA03111	MICB*005:05	-	-	-	+	+	+	-	-
+HLA07364	MICB*005:06	-	-	-	+	+	+	+	+
+HLA08420	MICB*005:07	-	-	-	+	+	+	+	+
+HLA08423	MICB*005:08	-	-	-	+	+	+	+	+
+HLA02063	MICB*006	-	-	-	+	+	+	+	-
+HLA02069	MICB*007	-	-	-	+	+	+	+	-
+HLA02065	MICB*008	+	+	+	+	+	+	+	+
+HLA02066	MICB*009N	-	-	-	+	+	+	+	-
+HLA02070	MICB*010	-	-	-	+	+	+	+	+
+HLA02071	MICB*011	-	-	-	+	+	+	+	+
+HLA02072	MICB*012	-	-	-	+	+	+	+	+
+HLA02074	MICB*013	-	-	-	+	+	+	+	-
+HLA02073	MICB*014	-	-	-	+	+	+	+	-
+HLA02075	MICB*015	-	-	-	+	+	+	+	-
+HLA02188	MICB*016	-	-	-	+	+	+	-	-
+HLA02190	MICB*018	-	-	-	+	+	+	-	-
+HLA02191	MICB*019	-	-	-	+	+	+	-	-
+HLA02192	MICB*020	-	-	-	+	+	+	-	-
+HLA02186	MICB*021N	-	-	-	+	+	+	-	-
+HLA02187	MICB*022	-	-	-	+	+	+	-	-
+HLA05831	MICB*023	-	-	-	+	+	+	+	+
+HLA07084	MICB*024	-	-	-	+	+	+	-	-
+HLA07085	MICB*025	-	-	-	+	+	+	-	-
+HLA07379	MICB*026	-	-	-	+	+	+	+	+
+HLA08422	MICB*027	-	-	-	+	+	+	+	+
+HLA08424	MICB*028	-	-	-	+	+	+	+	+
+HLA08425	MICB*029	-	-	-	+	+	+	+	+

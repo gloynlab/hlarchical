@@ -1,0 +1,12 @@
+#Gene name	K
+#Alleles	6
+#Maxgene	3557
+#Maxnuc	1094
+#Exon	8	72	270	275	280	117	27	48	5
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6	exon7	exon8
+HLA02654	HLA-K*01:01:01:01	+	+	+	+	+	+	+	+	+	+
+HLA02658	HLA-K*01:01:01:02	+	+	+	+	+	+	+	+	+	+
+HLA02657	HLA-K*01:01:01:03	+	+	+	+	+	+	+	+	+	+
+HLA02659	HLA-K*01:01:01:04	+	+	+	+	+	+	+	+	+	+
+HLA02656	HLA-K*01:02	+	+	+	+	+	+	+	+	+	+
+HLA02660	HLA-K*01:03	+	+	+	+	+	+	+	+	+	+

@@ -1,0 +1,9 @@
+#Gene name	DRB6
+#Alleles	3
+#Maxgene	0
+#Maxnuc	0
+#Exon	6	0	271	282	111	24	14
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6
+HLA00929	HLA-DRB6*01:01	-	-	-	+	-	-	-	-
+HLA00930	HLA-DRB6*02:01	-	-	-	+	+	+	+	+
+HLA00931	HLA-DRB6*02:02	-	-	-	+	-	-	-	-

@@ -1,0 +1,19 @@
+#Gene name	DOB
+#Alleles	13
+#Maxgene	4786
+#Maxnuc	823
+#Exon	6	91	270	282	111	32	37
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6
+HLA01098	HLA-DOB*01:01:01:01	+	+	+	+	+	+	+	+
+HLA01227	HLA-DOB*01:01:01:02	+	+	+	+	+	+	+	+
+HLA06458	HLA-DOB*01:01:01:03	+	+	+	+	+	+	+	+
+HLA06455	HLA-DOB*01:01:01:04	+	+	+	+	+	+	+	+
+HLA01217	HLA-DOB*01:01:02	-	+	+	+	+	+	+	+
+HLA02013	HLA-DOB*01:01:03:01	+	+	+	+	+	+	+	+
+HLA06467	HLA-DOB*01:01:03:02	+	+	+	+	+	+	+	+
+HLA01099	HLA-DOB*01:02:01	-	-	+	+	+	+	+	+
+HLA01215	HLA-DOB*01:02:02	+	+	+	+	+	+	+	+
+HLA01100	HLA-DOB*01:03	-	-	+	+	+	+	+	+
+HLA01206	HLA-DOB*01:04:01:01	+	+	+	+	+	+	+	+
+HLA01216	HLA-DOB*01:04:01:02	+	+	+	+	+	+	+	+
+HLA06460	HLA-DOB*01:05	+	+	+	+	+	+	+	+

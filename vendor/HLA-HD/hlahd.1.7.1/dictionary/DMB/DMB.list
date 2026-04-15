@@ -1,0 +1,19 @@
+#Gene name	DMB
+#Alleles	13
+#Maxgene	6740
+#Maxnuc	792
+#Exon	6	55	282	285	117	36	17
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6
+HLA00489	HLA-DMB*01:01:01:01	+	+	+	+	+	+	+	+
+HLA06461	HLA-DMB*01:01:01:02	+	+	+	+	+	+	+	+
+HLA06462	HLA-DMB*01:01:01:03	+	+	+	+	+	+	+	+
+HLA06466	HLA-DMB*01:01:01:04	+	+	+	+	+	+	+	+
+HLA00490	HLA-DMB*01:02	-	-	-	-	+	-	-	-
+HLA00491	HLA-DMB*01:03:01:01	+	+	+	+	+	+	+	+
+HLA06459	HLA-DMB*01:03:01:02	+	+	+	+	+	+	+	+
+HLA06463	HLA-DMB*01:03:01:03	+	+	+	+	+	+	+	+
+HLA06465	HLA-DMB*01:03:01:04	+	+	+	+	+	+	+	+
+HLA00492	HLA-DMB*01:04	-	-	-	-	+	-	-	-
+HLA00493	HLA-DMB*01:05	-	-	-	+	+	-	-	-
+HLA01083	HLA-DMB*01:06	-	-	-	+	+	-	-	-
+HLA02012	HLA-DMB*01:07	-	+	+	+	+	+	+	+

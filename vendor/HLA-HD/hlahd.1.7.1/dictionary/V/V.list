@@ -1,0 +1,9 @@
+#Gene name	V
+#Alleles	3
+#Maxgene	1903
+#Maxnuc	538
+#Exon	3	72	270	196
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3
+HLA02801	HLA-V*01:01:01:01	+	+	+	+	+
+HLA02802	HLA-V*01:01:01:02	+	+	+	+	+
+HLA02803	HLA-V*01:01:01:03	+	+	+	+	+

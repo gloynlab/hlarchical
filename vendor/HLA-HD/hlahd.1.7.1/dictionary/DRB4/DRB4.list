@@ -1,0 +1,21 @@
+#Gene name	DRB4
+#Alleles	15
+#Maxgene	15464
+#Maxnuc	801
+#Exon	6	100	270	282	111	24	14
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6
+HLA00905	HLA-DRB4*01:01:01:01	+	+	+	+	+	+	+	+
+HLA00907	HLA-DRB4*01:02	-	-	-	+	+	-	-	-
+HLA00908	HLA-DRB4*01:03:01:01	+	+	+	+	+	+	+	+
+HLA00909	HLA-DRB4*01:03:01:02N	-	-	-	+	+	-	-	-
+HLA06603	HLA-DRB4*01:03:01:03	+	+	+	+	+	+	+	+
+HLA00910	HLA-DRB4*01:03:02	-	-	+	+	+	+	+	+
+HLA01225	HLA-DRB4*01:03:03	-	+	+	+	+	+	+	+
+HLA01594	HLA-DRB4*01:03:04	-	-	-	+	+	-	-	-
+HLA00911	HLA-DRB4*01:04	-	-	-	+	-	-	-	-
+HLA00912	HLA-DRB4*01:05	-	-	-	+	-	-	-	-
+HLA01559	HLA-DRB4*01:06	-	-	-	+	+	-	-	-
+HLA01891	HLA-DRB4*01:07	-	-	+	+	-	-	-	-
+HLA04572	HLA-DRB4*01:08	-	-	-	+	-	-	-	-
+HLA00913	HLA-DRB4*02:01N	-	-	+	+	+	-	-	-
+HLA00914	HLA-DRB4*03:01N	-	-	-	-	+	-	-	-

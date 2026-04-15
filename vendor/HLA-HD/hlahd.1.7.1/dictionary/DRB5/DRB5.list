@@ -1,0 +1,26 @@
+#Gene name	DRB5
+#Alleles	20
+#Maxgene	0
+#Maxnuc	801
+#Exon	6	100	270	282	111	24	14
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6
+HLA00915	HLA-DRB5*01:01:01	-	+	+	+	+	+	+	+
+HLA00916	HLA-DRB5*01:01:02	-	-	-	+	-	-	-	-
+HLA00917	HLA-DRB5*01:02	-	-	+	+	+	+	+	+
+HLA00918	HLA-DRB5*01:03	-	-	-	+	-	-	-	-
+HLA00919	HLA-DRB5*01:04	-	-	+	+	+	-	-	-
+HLA00920	HLA-DRB5*01:05	-	-	+	+	-	-	-	-
+HLA00921	HLA-DRB5*01:06	-	-	-	+	-	-	-	-
+HLA00922	HLA-DRB5*01:07	-	-	-	+	-	-	-	-
+HLA00923	HLA-DRB5*01:08N	-	-	-	+	+	-	-	-
+HLA00924	HLA-DRB5*01:09	-	-	-	+	-	-	-	-
+HLA01012	HLA-DRB5*01:10N	-	-	-	+	-	-	-	-
+HLA01638	HLA-DRB5*01:11	-	-	-	+	-	-	-	-
+HLA01634	HLA-DRB5*01:12	-	-	-	+	-	-	-	-
+HLA01871	HLA-DRB5*01:13	-	-	-	+	-	-	-	-
+HLA04132	HLA-DRB5*01:14	-	-	-	+	+	-	-	-
+HLA00926	HLA-DRB5*02:02	-	+	+	+	+	+	+	+
+HLA00927	HLA-DRB5*02:03	-	-	-	+	-	-	-	-
+HLA00928	HLA-DRB5*02:04	-	-	-	+	-	-	-	-
+HLA01280	HLA-DRB5*02:05	-	-	-	+	-	-	-	-
+HLA08085	HLA-DRB5*02:06	-	-	-	+	+	-	-	-

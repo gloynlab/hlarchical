@@ -1,0 +1,5 @@
+bowtie2-build all_exon_N150.fasta all_exon_N150.fasta 
+bowtie2-build all_intron_N150.fasta all_intron_N150.fasta
+cat all_exon_N150.fasta all_intron_N150.fasta > all_exon_intron_N150.fasta 
+bowtie2-build all_exon_intron_N150.fasta all_exon_intron_N150.fasta
+bowtie2-build all_gen_w_utr_N150.fasta all_gen_w_utr_N150.fasta 

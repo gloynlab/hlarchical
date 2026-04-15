@@ -1,0 +1,13 @@
+#Gene name	DMA
+#Alleles	7
+#Maxgene	5013
+#Maxnuc	786
+#Exon	5	88	285	279	129	5
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5
+HLA00485	HLA-DMA*01:01:01:01	+	+	+	+	+	+	+
+HLA06456	HLA-DMA*01:01:01:02	+	+	+	+	+	+	+
+HLA06457	HLA-DMA*01:01:01:03	+	+	+	+	+	+	+
+HLA06464	HLA-DMA*01:01:01:04	+	+	+	+	+	+	+
+HLA00486	HLA-DMA*01:02	+	+	+	+	+	+	+
+HLA00487	HLA-DMA*01:03	-	-	-	+	+	-	-
+HLA00488	HLA-DMA*01:04	-	-	-	+	+	-	-

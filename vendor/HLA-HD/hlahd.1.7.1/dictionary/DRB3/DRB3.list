@@ -1,0 +1,64 @@
+#Gene name	DRB3
+#Alleles	58
+#Maxgene	13614
+#Maxnuc	801
+#Exon	6	100	270	282	111	24	14
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6
+HLA00887	HLA-DRB3*01:01:02:01	+	+	+	+	+	+	+	+
+HLA01191	HLA-DRB3*01:01:02:02	-	+	+	+	+	+	+	+
+HLA00888	HLA-DRB3*01:01:03	-	-	+	+	-	-	-	-
+HLA00889	HLA-DRB3*01:01:04	-	-	-	+	-	-	-	-
+HLA03432	HLA-DRB3*01:01:05	-	-	-	+	-	-	-	-
+HLA00890	HLA-DRB3*01:02	-	-	+	+	-	-	-	-
+HLA00891	HLA-DRB3*01:03	-	-	-	+	-	-	-	-
+HLA00892	HLA-DRB3*01:04	-	-	-	+	-	-	-	-
+HLA00893	HLA-DRB3*01:05	-	-	-	+	-	-	-	-
+HLA01092	HLA-DRB3*01:06	-	-	-	+	-	-	-	-
+HLA01093	HLA-DRB3*01:07	-	-	-	+	-	-	-	-
+HLA01462	HLA-DRB3*01:08	-	-	-	+	-	-	-	-
+HLA01505	HLA-DRB3*01:09	-	-	-	+	-	-	-	-
+HLA01518	HLA-DRB3*01:10	-	-	-	+	-	-	-	-
+HLA01818	HLA-DRB3*01:11	-	-	-	+	-	-	-	-
+HLA03433	HLA-DRB3*01:12	-	-	-	+	-	-	-	-
+HLA03434	HLA-DRB3*01:13	-	-	-	+	-	-	-	-
+HLA04351	HLA-DRB3*01:14	-	-	-	+	-	-	-	-
+HLA06512	HLA-DRB3*01:15	-	-	-	+	-	-	-	-
+HLA00894	HLA-DRB3*02:01	-	+	+	+	+	+	+	+
+HLA00895	HLA-DRB3*02:02:01:01	+	+	+	+	+	+	+	+
+HLA06593	HLA-DRB3*02:02:01:02	+	+	+	+	+	+	+	+
+HLA01094	HLA-DRB3*02:02:02	-	-	-	+	-	-	-	-
+HLA01160	HLA-DRB3*02:02:03	-	-	-	+	-	-	-	-
+HLA01608	HLA-DRB3*02:02:04	-	-	-	+	-	-	-	-
+HLA02637	HLA-DRB3*02:02:05	-	-	-	+	-	-	-	-
+HLA00896	HLA-DRB3*02:03	-	-	-	+	-	-	-	-
+HLA00897	HLA-DRB3*02:04	-	-	-	+	-	-	-	-
+HLA00898	HLA-DRB3*02:05	-	-	-	+	-	-	-	-
+HLA00899	HLA-DRB3*02:06	-	-	-	+	-	-	-	-
+HLA00900	HLA-DRB3*02:07	-	-	-	+	-	-	-	-
+HLA00901	HLA-DRB3*02:08	-	-	-	+	-	-	-	-
+HLA01095	HLA-DRB3*02:09	-	-	-	+	-	-	-	-
+HLA01157	HLA-DRB3*02:10	-	-	+	+	+	+	+	+
+HLA01165	HLA-DRB3*02:11	-	-	+	+	+	+	+	+
+HLA01185	HLA-DRB3*02:12	-	-	-	+	-	-	-	-
+HLA01190	HLA-DRB3*02:13	-	-	-	+	-	-	-	-
+HLA01444	HLA-DRB3*02:14	-	-	-	+	-	-	-	-
+HLA01542	HLA-DRB3*02:15	-	-	-	+	-	-	-	-
+HLA01560	HLA-DRB3*02:16	-	-	-	+	-	-	-	-
+HLA01570	HLA-DRB3*02:17	-	-	-	+	-	-	-	-
+HLA01769	HLA-DRB3*02:18	-	-	-	+	-	-	-	-
+HLA01870	HLA-DRB3*02:19	-	-	-	+	-	-	-	-
+HLA02151	HLA-DRB3*02:20	-	-	-	+	+	-	-	-
+HLA02410	HLA-DRB3*02:21	-	-	-	+	-	-	-	-
+HLA02765	HLA-DRB3*02:22	-	-	-	+	-	-	-	-
+HLA03064	HLA-DRB3*02:23	-	-	-	+	-	-	-	-
+HLA03574	HLA-DRB3*02:24	-	-	-	+	+	-	-	-
+HLA03989	HLA-DRB3*02:25	-	-	-	+	-	-	-	-
+HLA06515	HLA-DRB3*02:26	-	-	-	+	-	-	-	-
+HLA06517	HLA-DRB3*02:27	-	-	-	+	-	-	-	-
+HLA06671	HLA-DRB3*02:28	-	-	-	+	+	-	-	-
+HLA07562	HLA-DRB3*02:29N	-	-	-	+	+	+	-	-
+HLA00902	HLA-DRB3*03:01:01	-	+	+	+	+	+	+	+
+HLA01233	HLA-DRB3*03:01:02	-	-	-	+	-	-	-	-
+HLA03573	HLA-DRB3*03:01:03	-	-	-	+	+	-	-	-
+HLA00903	HLA-DRB3*03:02	-	-	-	+	-	-	-	-
+HLA00904	HLA-DRB3*03:03	-	-	-	+	+	-	-	-

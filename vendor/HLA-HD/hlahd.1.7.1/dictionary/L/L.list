@@ -1,0 +1,11 @@
+#Gene name	L
+#Alleles	5
+#Maxgene	3770
+#Maxnuc	1096
+#Exon	8	73	270	274	277	117	33	48	5
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6	exon7	exon8
+HLA02655	HLA-L*01:01:01:01	+	+	+	+	+	+	+	+	+	+
+HLA02662	HLA-L*01:01:01:02	+	+	+	+	+	+	+	+	+	+
+HLA02663	HLA-L*01:01:01:03	+	+	+	+	+	+	+	+	+	+
+HLA02661	HLA-L*01:01:02	+	+	+	+	+	+	+	+	+	+
+HLA02664	HLA-L*01:02	+	+	+	+	+	+	+	+	+	+

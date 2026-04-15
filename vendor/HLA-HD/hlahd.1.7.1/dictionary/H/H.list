@@ -1,0 +1,18 @@
+#Gene name	H
+#Alleles	12
+#Maxgene	3510
+#Maxnuc	1104
+#Exon	8	79	270	276	277	117	33	47	5
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5	exon6	exon7	exon8
+HLA02546	HLA-H*01:01:01:01	+	+	+	+	+	+	+	+	+	+
+HLA02557	HLA-H*01:01:01:02	+	+	+	+	+	+	+	+	+	+
+HLA02548	HLA-H*01:01:01:03	+	+	+	+	+	+	+	+	+	+
+HLA02551	HLA-H*01:02	+	+	+	+	+	+	+	+	+	+
+HLA02547	HLA-H*02:01:01:01	+	+	+	+	+	+	+	+	+	+
+HLA02549	HLA-H*02:01:01:02	+	+	+	+	+	+	+	+	+	+
+HLA02556	HLA-H*02:02	+	+	+	+	+	+	+	+	+	+
+HLA02550	HLA-H*02:03	+	+	+	+	+	+	+	+	+	+
+HLA02552	HLA-H*02:04	+	+	+	+	+	+	+	+	+	+
+HLA02554	HLA-H*02:05	-	+	+	+	+	+	+	+	+	+
+HLA02555	HLA-H*02:06	-	+	+	+	+	+	+	+	+	+
+HLA02553	HLA-H*03:01	-	+	+	+	+	+	+	+	+	+

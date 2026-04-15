@@ -1,0 +1,18 @@
+#Gene name	DOA
+#Alleles	12
+#Maxgene	3653
+#Maxnuc	753
+#Exon	5	82	249	282	136	4
+#HLA name	Allele name	gene	nuc	exon1	exon2	exon3	exon4	exon5
+HLA00494	HLA-DOA*01:01:01	+	+	+	+	+	+	+
+HLA00495	HLA-DOA*01:01:02:01	+	+	+	+	+	+	+
+HLA00496	HLA-DOA*01:01:02:02	+	+	+	+	+	+	+
+HLA00995	HLA-DOA*01:01:02:03	+	+	+	+	+	+	+
+HLA00996	HLA-DOA*01:01:03	-	-	-	+	+	+	+
+HLA00997	HLA-DOA*01:01:04:01	+	+	+	+	+	+	+
+HLA00998	HLA-DOA*01:01:04:02	+	-	-	+	+	+	+
+HLA00999	HLA-DOA*01:01:05	+	+	+	+	+	+	+
+HLA02145	HLA-DOA*01:01:06	-	+	+	+	+	+	+
+HLA02153	HLA-DOA*01:02	-	+	+	+	+	+	+
+HLA02154	HLA-DOA*01:03	-	+	+	+	+	+	+
+HLA02155	HLA-DOA*01:04N	-	+	+	+	+	+	+
