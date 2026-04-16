@@ -164,6 +164,9 @@ class Trainer:
         self.eval(epoch, maps_file=maps_file, test=True)
 
     def predict(self, epoch=None, pred_file='to_predict.txt', out_file='predicted.txt', maps_file='maps.txt', split_by_digit=True):
+        if not os.path.exists(maps_file):
+            raise FileNotFoundError(f'maps file {maps_file} not found!')
+
         df = pd.read_table(maps_file, header=0, sep='\t')
         maps = {}
         for n in range(df.shape[0]):

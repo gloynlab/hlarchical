@@ -13,7 +13,8 @@ from torchmetrics.classification import MulticlassF1Score
 from torchmetrics.classification import MulticlassAUROC
 from torchmetrics.classification import MulticlassAccuracy
 
-config_dir = f'{resources.files("hlarchical").parent}/config'
+config_dir = f'{resources.files("hlarchical")}/config'
+data_dir = f'{resources.files("hlarchical")}/data'
 
 class CustomLoss(torch.nn.Module):
     def __init__(self, cfg=None):

@@ -64,12 +64,24 @@ def main():
         hla = Preprocessor()
         sample_vcf = args.vcf
         ref_vcf = args.ref
+        if not os.path.exists(ref_vcf):
+            ref_vcf = data_dir + '/' + ref_vcf
+        if not os.path.exists(ref_vcf):
+            raise FileNotFoundError(f"Reference VCF file {ref_vcf} not found.")
+        else:
+            print(f'using reference VCF file: {ref_vcf}')
         genome_build = args.genome_build
         hla.phase_sample_on_reference(sample_vcf=sample_vcf, ref_vcf=ref_vcf, genome_build=genome_build)
     elif args.command == 'get-sample-features':
         hla = Processor()
         sample_vcf = args.vcf
         features_file = args.features
+        if not os.path.exists(features_file):
+            features_file = data_dir + '/' + features_file
+        if not os.path.exists(features_file):
+            raise FileNotFoundError(f"Features file {features_file} not found.")
+        else:
+            print(f'using features file: {features_file}')
         out_file = args.output
         hla.get_sample_features(sample_vcf=sample_vcf, features_file=features_file, out_file=out_file)
     elif args.command == 'predict':
@@ -79,6 +91,12 @@ def main():
         config_file = args.config_file
         epoch = args.epoch
         maps_file = args.maps_file
+        if not os.path.exists(maps_file):
+            maps_file = data_dir + '/' + maps_file
+        if not os.path.exists(maps_file):
+            raise FileNotFoundError(f"Maps file {maps_file} not found.")
+        else:
+            print(f'using maps file: {maps_file}')
         hla = Trainer(config_file=config_file, model_name=model_name)
         hla.predict(pred_file=in_file, out_file=out_file, epoch=epoch, maps_file=maps_file)
 
