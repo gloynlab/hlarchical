@@ -29,6 +29,9 @@ conda env create -f environment.yml
 conda activate hlarchical
 ```
 
+## Pipeline
+![](assets/pipeline.png)
+
 # Quick Start
 
 ```python
