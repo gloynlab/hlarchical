@@ -352,7 +352,7 @@ class Array():
                             # assuming sample_id contains FID, if all SampleID starts with '\d+-' or '\d+_'
                             sample_id_with_fid_dash = df['SampleID'].str.contains(r'^\d+-', na=False).all()
                             sample_id_with_fid_underscore = df['SampleID'].str.contains(r'^\d+_', na=False).all()
-                            if sample_id_with_fid or sample_id_with_fid_underscore:
+                            if sample_id_with_fid_dash or sample_id_with_fid_underscore:
                                 print(f'FID is being excluded from SampleID in {in_file}', flush=True)
 
                             for i, row in df.iterrows():
