@@ -335,7 +335,7 @@ class Array():
             df.to_csv(out_file, header=True, index=False, sep='\t')
 
     def merge_hlarchical_tables(self, ancestry_file='GAP_OMNI_GDA.txt', out_file='HLA_OMNI_GDA.txt', digits=[2, 4],
-                      tools=['SNP2HLA', 'HIBAG', 'hlarchicalMLP', 'hlarchicalCNN'], Ancestry=['European', 'Asian', 'African', 'Hispanic', 'MA'], Array=['GDA', 'OMNI'], ensemble=['HIBAG', 'SNP2HLA']):
+                      tools=['SNP2HLA', 'HIBAG', 'hlarchicalMLP', 'hlarchicalCNN'], Ancestry=['European', 'Asian', 'African', 'Hispanic', 'MA'], Array=['GDA', 'OMNI']):
         D = {}
         A = {}
         for digit in digits:
@@ -397,9 +397,7 @@ class Array():
                             cols += [f'Allele1_{tool}_digit{digit}', f'Allele2_{tool}_digit{digit}']
     
                         if tool == 'SNP2HLA':
-                            if ancestry in ['Asian', 'European']:
-                                pass
-                            else:
+                            if ancestry not in ['Asian', 'European']:
                                 ancestry = 'European'
                         if tool.find('hlarchical') != -1:
                             ancestry = 'MA'
@@ -413,27 +411,6 @@ class Array():
                 Ls.append(L)
         df = pd.DataFrame(Ls)
         df.columns = cols
-
-        if ensemble:
-            idx = df.columns.tolist().index('HLA')
-            for digit in digits:
-                for alelle in ['Allele1', 'Allele2']:
-                    idx += 1
-                    D = {}
-                    for tool in tools: 
-                        col = f'{alelle}_{tool}_digit{digit}'
-                        D[col] = df[col].tolist()
-
-                    L = []
-                    for n in range(df.shape[0]):
-                        value = '.'
-                        for tool in ensemble:
-                            col = f'{alelle}_{tool}_digit{digit}'
-                            if D[col][n] not in ['.', 'X']:
-                                value = D[col][n]
-                                break
-                        L.append(value)
-                    df.insert(loc=idx, column=f'{alelle}_ensemble_digit{digit}', value=L)
         df.to_csv(out_file, sep='\t', index=False)
 
     def hla_typing_genotyping_scoring(self, in_file):
