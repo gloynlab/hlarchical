@@ -100,7 +100,7 @@ class Array():
             print(cmd)
             subprocess.run(cmd, shell=True, check=True)
 
-    def get_hlarchical_table(self, in_file='', fam='', in_dir='', out_file='Euro_digit4.txt', digit=4, from_tool='snp2hla'):
+    def get_hlarchical_table(self, in_file='', in_dir='HLA-HD', out_file='1000G_WGS_HLA-HD.txt', digit=4, from_tool='hla-hd'):
         header = ['SampleID', 'HLA', 'Allele1', 'Allele2']
         if in_file.endswith('.phased'):
             if from_tool == 'snp2hla':
@@ -108,7 +108,7 @@ class Array():
                 skiprows = 1
                 col = 1
                 in_header = 0
-            elif from_tool == 'deephla':
+            elif from_tool == 'deep-hla':
                 sep = '\t'
                 skiprows = 0
                 col = 0
@@ -125,7 +125,7 @@ class Array():
             for n in range(col + 1, df.shape[1], 2):
                 if from_tool == 'snp2hla':
                     sample_id = df.columns[n]
-                elif from_tool == 'deephla':
+                elif from_tool == 'deep-hla':
                     sample_id = samples[int((n-col)/2)]
                 allele1 = {}
                 allele2 = {}
@@ -177,8 +177,11 @@ class Array():
                 if df.shape[0] > 0 and df.shape[1] > 1:
                     item1 = df.iloc[0, 0].split(',')
                     item2 = df.iloc[0, 1].split(',')
-                    if len(item1) > 1 or len(item2) > 1:
-                        print(f'Warning: multiple alleles found for sample {sample} and HLA {hla} in file {f}. Only the first allele will be used.', flush=True)
+                    item1x = set([x.replace('*', ':').split(':')[0:int(digit/2) + 1] for x in item1])
+                    item2x = set([x.replace('*', ':').split(':')[0:int(digit/2) + 1] for x in item2])
+                    if len(item1x) > 1 or len(item2x) > 1:
+                        print(f'Warning: multiple alleles found for sample {sample} and HLA {hla} in file {f}. Only the first allele will be used. Allele1: {item1}, Allele2: {item2}', flush=True)
+
                     allele1 = item1[0]
                     allele2 = item2[0]
                     allele1 = allele1.replace('*', ':')
@@ -252,7 +255,7 @@ class Array():
             df.to_csv(out_file, header=True, index=False, sep='\t')
             print('Formatted output saved to', out_file)
 
-        elif from_tool == 'optitype':
+        elif from_tool == 'opti-type':
             D = {}
             fs = glob.glob(f'{in_dir}/**/*_result.tsv', recursive=True)
             for f in sorted(fs):
@@ -291,7 +294,7 @@ class Array():
             df.to_csv(out_file, header=True, index=False, sep='\t')
             print('Formatted output saved to', out_file)
 
-        elif from_tool == 'hlatyping':
+        elif from_tool == 'hla-typing':
             # internal use only
             df = pd.read_excel(in_file, dtype=str, skiprows=2)
             header = ['SampleID', 'Race', 'Gender', 'Disease', 'HLA', 'Allele1', 'Allele2']
