@@ -1,362 +1,258 @@
-import numpy as np
+import os
 import pandas as pd
+import subprocess
+import gzip
 
-class DataPreprocessor:
-    def __init__(self, ref_bim='Pan-Asian_REF.bim', ref_phased='Pan-Asian_REF.bgl.phased', sample_phased='OMNI_Pan-Asian.bgl.phased', label_filter=['HLA'], feature_filter=['rs'], hla_renaming=True, expert_by='ld'):
-        self.label_filter = label_filter
-        self.feature_filter = feature_filter
-        self.expert_by = expert_by
+class Preprocessor:
+    def __init__(self):
+        self.HLA = ['HLA-A', 'HLA-B', 'HLA-C', 'HLA-DPA1', 'HLA-DPB1', 'HLA-DQA1', 'HLA-DQB1', 'HLA-DRB1']
+        self.hla_chrom = ['6', 'chr6']
 
-        self.ref_bim = pd.read_table(ref_bim, header=None, sep='\t')
-        bim_cols = ['chrom', 'id', 'cm', 'pos', 'A1', 'A2']
-        self.ref_bim.columns = [f'{x}_ref' for x in bim_cols]
+    def hlarchical_table_to_vcf(self, in_file='1000G_WGS_HLA-HD.txt', genome_build='GRCh37', hla_pos_file='HLA_gene_position.txt'):
+        hla_pos_file = hla_pos_file.split('.txt')[0] + f'_{genome_build}.txt'
+        if os.path.exists(hla_pos_file) == False:
+            self.get_hla_position(out_file=hla_pos_file, genome_build=genome_build)
+        df_pos = pd.read_table(hla_pos_file, header=None, sep='\t', dtype=str)
+        pos_dict = {}
+        for n in range(df_pos.shape[0]):
+            gene = df_pos.iloc[n, 0]
+            chrom = df_pos.iloc[n, 1]
+            pos = df_pos.iloc[n, 2]
+            pos_dict[gene] = (chrom, pos)
 
-        self.ref_phased = pd.read_table(ref_phased, header=None, sep=' ')
-        self.ref_ids = list(self.ref_phased[self.ref_phased[1] == 'id'].iloc[0, 2::2])
-        cols = list(self.ref_phased.columns)
-        cols[0] = 'I_ref'
-        cols[1] = 'id_ref'
-        for i in range(2, self.ref_phased.shape[1], 2):
-            cols[i] = f'A1_{self.ref_ids[i//2 - 1]}'
-            cols[i + 1] = f'A2_{self.ref_ids[i//2 - 1]}'
-        self.ref_phased.columns = cols
+        df = pd.read_table(in_file, header=0, sep='\t', dtype=str)
 
-        self.sample_phased = pd.read_table(sample_phased, header=None, sep=' ')
-        self.sample_ids = list(self.sample_phased[self.sample_phased[1] == 'id'].iloc[0, 2::2])
-        cols = list(self.sample_phased.columns)
-        cols[0] = 'I_sample'
-        cols[1] = 'id_sample'
-        for i in range(2, self.sample_phased.shape[1], 2):
-            cols[i] = f'A1_{self.sample_ids[i//2 - 1]}'
-            cols[i + 1] = f'A2_{self.sample_ids[i//2 - 1]}'
-        self.sample_phased.columns = cols
-
-        # Extract HLA for labels
-        wh = []
-        for n in range(self.ref_phased.shape[0]):
-            id_ref = self.ref_phased['id_ref'].iloc[n]
-            flag = False
-            for flt in label_filter:
-                if str(id_ref).find(flt) != -1:
-                    flag = True
-                    break
-            wh.append(flag)
-        self.ref_phased_hla = self.ref_phased[wh].copy()
-
-        self.hla_renaming = hla_renaming
-        if hla_renaming:
-            self.ref_phased_hla = self.renaming_hla(self.ref_phased_hla)
-
-        # Extract non-HLA for features
-        wh = []
-        for n in range(self.ref_phased.shape[0]):
-            id_ref = self.ref_phased['id_ref'].iloc[n]
-            flag = False
-            for flt in feature_filter:
-                if str(id_ref).find(flt) != -1:
-                    flag = True
-                    break
-            wh.append(flag)
-        self.ref_phased_non_hla = self.ref_phased[wh].copy()
-
-        self.ld_blocks = {}
-        self.ld_blocks['HLA-A'] = ['HLA-A']
-        self.ld_blocks['HLA-B'] = ['HLA-B', 'HLA-C']
-        self.ld_blocks['HLA-C'] = ['HLA-B', 'HLA-C']
-        self.ld_blocks['HLA-DPA1'] = ['HLA-DPA1', 'HLA-DPB1']
-        self.ld_blocks['HLA-DPB1'] = ['HLA-DPA1', 'HLA-DPB1']
-        self.ld_blocks['HLA-DQA1'] = ['HLA-DQA1', 'HLA-DQB1', 'HLA-DRB1']
-        self.ld_blocks['HLA-DQB1'] = ['HLA-DQA1', 'HLA-DQB1', 'HLA-DRB1']
-        self.ld_blocks['HLA-DRB1'] = ['HLA-DQA1', 'HLA-DQB1', 'HLA-DRB1']
-        self.expert_groups = {}
-        self.expert_groups['E0'] = ['HLA-A']
-        self.expert_groups['E1'] = ['HLA-B', 'HLA-C']
-        self.expert_groups['E2'] = ['HLA-DPA1', 'HLA-DPB1']
-        self.expert_groups['E3'] = ['HLA-DQA1', 'HLA-DQB1', 'HLA-DRB1']
-
-    def make_features(self, subset_bim=None, out_file='features.txt'):
-        # Subset bim to the HLA region
-        if subset_bim is not None:
-            wh = []
-            for n in range(self.ref_bim.shape[0]):
-                flag = False
-                ch = self.ref_bim['chrom_ref'].iloc[n]
-                pos = self.ref_bim['pos_ref'].iloc[n]
-                if str(ch) == str(subset_bim[0]):
-                    if pos < subset_bim[2] and pos > subset_bim[1]:
-                        flag = True
-                        break
-                wh.append(flag)
-            self.ref_bim = self.ref_bim[wh]
-            print(f"Subsetted ref bim to the region: {subset_bim}")
-
-        df = pd.merge(self.ref_bim, self.ref_phased_non_hla, on='id_ref')
-        wh = df['id_ref'].isin(self.sample_phased['id_sample'])
-        df = df[wh]
-
-        L = []
-        L.append(df[['id_ref', 'pos_ref']])
-        for col in df.columns:
-            col2 = str(col)
-            if (col2.startswith('A1_') or col2.startswith('A2_')) and col2.find('_ref') == -1 and col2.find('_sample') == -1:
-                col3 = df[col]
-                if isinstance(col3, pd.DataFrame):
-                    col3 = col3.iloc[:,0]
-                d = {col:(col3==df['A1_ref']).astype(int)}
-                L.append( pd.DataFrame(d))
-        df = pd.concat(L, axis=1)
-        df = df.sort_values(by='pos_ref').reset_index(drop=True)
-        print('processed feature data before transpose:')
-        print(f'features data saved to {out_file}')
-
-        M = np.zeros((int(df.shape[1]/2 - 1), df.shape[0] * 2), dtype=int)
-        H = []
-        S = []
-        for n in range(2, df.shape[1], 2):
-            S.append(df.columns[n].split('A1_')[-1].split('A2_')[-1])
-            for m in range(df.shape[0]):
-                id_ref = df['id_ref'].iloc[m]
-                pos_ref = df['pos_ref'].iloc[m]
-                for j in range(2):
-                    M[n // 2 - 1, m * 2 + j] = df.iloc[m, n + j]
-                if n == 2:
-                    H.append(f'A1_{id_ref}_{pos_ref}')
-                    H.append(f'A2_{id_ref}_{pos_ref}')
-        df = pd.DataFrame(M)
-        df.index = S
-        df.index.name = 'sample'
-        df.columns = H
-        df.to_csv(out_file, sep='\t', index=True, header=True)
-
-    def make_labels(self, out_file='labels.txt', maps_file='maps.txt'):
-        self.get_label_maps(maps_file)
-        print('processed label data before transpose:')
-        print(self.ref_phased_hla)
-
-        n_heads = (self.maps['head_idx'].max() + 1) * 2
-        heads = self.maps['head'].unique()
-        S = []
-        H = []
-        for h in heads:
-            H.append(f"A1_{h}")
-            H.append(f"A2_{h}")
-        M = np.zeros((int(self.ref_phased_hla.shape[1]/2 - 1), n_heads), dtype=int)
-        for n in range(2, self.ref_phased_hla.shape[1], 2):
-            S.append(self.ref_phased_hla.columns[n].split('A1_')[-1].split('A2_')[-1])
-            for j in range(2):
-                variants = self.ref_phased_hla.loc[self.ref_phased_hla.iloc[:, n + j] == 'P', 'id_ref'].values
-                df_sub = self.maps[self.maps['allele'].isin(variants)]
-                for m in range(df_sub.shape[0]):
-                    head_idx = df_sub['head_idx'].iloc[m]
-                    label = df_sub['label'].iloc[m]
-                    M[n // 2 - 1, head_idx * 2 + j] = label
-        df = pd.DataFrame(M)
-        df.index = S
-        df.index.name = 'sample'
-        df.columns = H
-        df.to_csv(out_file, sep='\t', index=True, header=True)
-        print(f'labels data saved to {out_file}')
-
-    def get_label_maps(self, out_file='maps.txt'):
         D = {}
-        for n in range(self.ref_phased_hla.shape[0]):
-            id_ref = self.ref_phased_hla['id_ref'].iloc[n]
-            fields = id_ref.split(':')
-            head = ':'.join(fields[0:-1])
-            D.setdefault(head, [])
-            if id_ref not in D[head]:
-                D[head].append(id_ref)
+        A = []
+        S = []
+        for k, g in df.groupby('SampleID'):
+            if k not in S:
+                S.append(k)
+            D.setdefault(k, {})
+            for gene in self.HLA:
+                for a in ['Allele1', 'Allele2']:
+                    allele2d = '.'
+                    allele4d = '.'
+                    allele = g.loc[g['HLA'] == gene, a].values[0]
+                    D[k].setdefault(a, [])
+                    if allele not in ['.', './.', '0', 'NA']:
+                        alleles = allele.split(':')
+                        allele2d = f'{alleles[0]}:{alleles[1]}'
+                        allele4d = f'{alleles[0]}:{alleles[1]}:{alleles[2]}'
+                        D[k][a].append(allele2d)
+                        D[k][a].append(allele4d)
+                        A.append(allele2d)
+                        A.append(allele4d)
 
-        H = {}
-        for k in sorted(D):
-            H[k] = sorted(D[k])
-
-        maps = []
-        for head in H:
-            for allele in H[head]:
-                digit = len(allele.split(':')[1:]) * 2
-                maps.append([digit, allele, H[head].index(allele) + 1, head])
-        maps = pd.DataFrame(maps, columns=['digit', 'allele', 'label', 'head'])
-        maps.sort_values(by=['digit', 'head', 'label'], inplace=True)
-
-        heads = []
-        for digit in sorted(maps['digit'].unique()):
-            df_sub = maps[maps['digit'] == digit]
-            for n in range(df_sub.shape[0]):
-                head = df_sub['head'].iloc[n]
-                if head not in heads:
-                    heads.append(head)
-        maps['head_idx'] = [heads.index(x) for x in maps['head']]
-
-        parent = []
-        parent_value = []
-        expert = []
-        for n in range(maps.shape[0]):
-            digit = maps['digit'].iloc[n]
-            head = maps['head'].iloc[n]
-            if digit == 2:
-                p = '.'
-                p_val = -1
-                e = maps['head'].iloc[n]
-            else:
-                p = ':'.join(head.split(':')[0:-1])
-                p_val = H[p].index(head) + 1
-                e = head.split(':')[0]
-            parent.append(p)
-            parent_value.append(p_val)
-            expert.append(e)
-        maps['parent'] = parent
-        maps['parent_val'] = parent_value
-
-        if self.expert_by == 'gene':
-            maps['expert'] = expert
-        elif self.expert_by == 'ld':
-            E = []
-            for x in expert:
-                expert_id = '.'
-                for k in self.expert_groups:
-                    if x in self.expert_groups[k]:
-                        expert_id = k
-                        break
-                if expert_id == '.':
-                    expert_id = self.expert_groups.keys()[0]
-                    print(f'{x} not found in LD groups, assigned to {expert_id}')
-                E.append(expert_id)
-            maps['expert'] = E 
-
-        self.maps = maps
-        self.maps.to_csv(out_file, sep='\t', index=False, header=True)
-        print('processed label maps:')
-        print(self.maps)
-        print(f'maps data saved to {out_file}')
-
-    def make_masks(self, out_file='masks.txt', features_file='features.txt', flank=500000):
-        # Extract HLA
-        wh = []
-        for n in range(self.ref_bim.shape[0]):
-            id_ref = self.ref_bim['id_ref'].iloc[n]
-            flag = False
-            for flt in self.label_filter:
-                if str(id_ref).find(flt) != -1:
-                    flag = True
-                    break
-            wh.append(flag)
-        ref_bim_hla = self.ref_bim[wh].copy()
-        if self.hla_renaming:
-            ref_bim_hla = self.renaming_hla(ref_bim_hla)
-
-        H = {}
-        for n in range(ref_bim_hla.shape[0]):
-            gene = ref_bim_hla['id_ref'].iloc[n].split(':')[0]
-            pos = ref_bim_hla['pos_ref'].iloc[n]
-            H.setdefault(gene, [])
-            H[gene].append(pos)
-
-        start_end_dict = {}
-        for gene in H:
-            if self.expert_by == 'gene':
-                positions = H[gene]
-                start_end_dict[gene] = (min(positions), max(positions))
-            elif self.expert_by == 'ld':
-                positions = []
-                if gene in self.ld_blocks:
-                    for g in self.ld_blocks[gene]:
-                        if g in H:
-                            positions += H[g]
-                start_end_dict[gene] = (min(positions), max(positions))
-
-        features = pd.read_table(features_file, header=0, sep='\t', low_memory=False)
         L = []
-        E = []
-        for gene in start_end_dict:
-            if self.expert_by == 'gene':
-                expert = gene
-            elif self.expert_by == 'ld':
-                expert = '.'
-                for k in self.expert_groups:
-                    if gene in self.expert_groups[k]:
-                        expert = k
-                        break
-                if expert == '.':
-                    expert = self.expert_groups.keys()[0]
-                    print(f'{gene} not found in LD groups, assigned to {expert}')
-
-            if expert not in E:
-                E.append(expert)
-                pos_min, pos_max = start_end_dict[gene]
-                m = []
-                for n in range(1, features.shape[1], 2):
-                    fields = features.columns[n].split('_')
-                    pos = int(fields[-1])
-                    if pos >= pos_min - flank and pos <= pos_max + flank:
-                        m.append(1)
+        for allele in sorted(set(A)):
+            gene = allele.split(':')[0]
+            if gene in pos_dict:
+                chrom, pos = pos_dict[gene]
+                ref = 'A'
+                alt = 'P'
+                row = [chrom, pos, allele, ref, alt, '.', 'PASS', '.', 'GT']
+                for sample in S:
+                    if allele in D[sample]['Allele1'] and allele in D[sample]['Allele2']:
+                        gt = '1/1'
+                    elif allele in D[sample]['Allele1'] or allele in D[sample]['Allele2']:
+                        gt = '0/1'
                     else:
-                        m.append(0)
-                L.append([expert] + m)
+                        gt = '0/0'
+                    row.append(gt)
+                L.append(row)
+
+        bfile = in_file.split('.txt')[0]
         df = pd.DataFrame(L)
-        df.columns = ['expert'] + ['_'.join(features.columns[n].split('_')[1:]) for n in range(1, features.shape[1], 2)]
-        df.to_csv(out_file, sep='\t', index=False, header=True)
-        print(f'processed masks data: {out_file}')
+        df.columns = ['#CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + S
+        out_file = f'{bfile}.vcf'
+        with open(out_file, 'w') as outfile:
+            outfile.write('##fileformat=VCFv4.2\n')
+            outfile.write('##source=VCFPhaser\n')
+            outfile.write('##contig=<ID=6>\n')
+            outfile.write('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
+        df.to_csv(out_file, sep='\t', index=False, mode='a')
 
-    def renaming_hla(self, df):
-        new_ids = []
-        for n in range(df.shape[0]):
-            id_ref = df['id_ref'].iloc[n]
-            fields = id_ref.split('_')
-            gene = '-'.join(fields[0:2])
-            allele = fields[-1]
-            if len(allele) < 4:
-                new_id = f"{gene}:{allele}"
-            elif len(allele) < 6:
-                new_id = f"{gene}:{allele[0:-2]}:{allele[-2:]}"
-            elif len(allele) < 8:
-                new_id = f"{gene}:{allele[0:-4]}:{alele[-4:-2]}:{allele[-2:]}"
+        samples_sorted = f'{bfile}_samples_sorted.txt'
+        cmd = f'bcftools query -l {out_file} | sort > {samples_sorted}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+        cmd = f'bcftools view -S {samples_sorted} {out_file} -Oz -o {bfile}_sampleSorted.vcf.gz; rm {out_file}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+        cmd = f'bcftools sort {bfile}_sampleSorted.vcf.gz -Oz -o {bfile}.vcf.gz; rm {bfile}_sampleSorted.vcf.gz; bcftools index {bfile}.vcf.gz'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+
+    def subset_samples_vcf(self, vcf_file, sample_list, out_file, n_threads=4):
+        cmd = f'bcftools view --threads {n_threads} -S {sample_list} {vcf_file} -Oz -o {out_file}; tabix -p vcf {out_file}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+
+    def subset_variants_vcf(self, vcf_file, genome_build='GRCh37', flank=1e6, n_threads=4):
+        hla_pos_file=f'HLA_gene_position_{genome_build}.txt' 
+        if os.path.exists(hla_pos_file) == False:
+            self.get_hla_position(out_file=hla_pos_file, genome_build=genome_build)
+        out_file = vcf_file.split('.vcf.gz')[0] + '_variantSubset.vcf.gz'
+        df = pd.read_table(hla_pos_file, header=None, sep='\t')
+        chrom = df.iloc[0, 1].astype(str)
+        start = df.iloc[:, 2].min() - int(flank)
+        end = df.iloc[:, 2].max() + int(flank)
+        cmd = f'bcftools view --threads {n_threads} -r {chrom}:{start}-{end} {vcf_file} -Oz -o {out_file}; tabix -p vcf {out_file}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+
+    def fixref_vcf(self, vcf_file, genome_build='GRCh37'):
+        out_file = vcf_file.split('.vcf')[0] + '_fixref.vcf.gz'
+        fasta_file = self.get_genome_reference(genome_build=genome_build)
+        # flip/swap using fixref
+        cmd = f'bcftools +fixref {vcf_file} -Oz -o {out_file} -- -d -f {fasta_file} -m flip'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+        # stats after fixref
+        cmd = f'bcftools +fixref {out_file} -- -f {fasta_file}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+
+    def make_reference(self, ref_variant_vcf='1000G_array_broad_overlappedWGS_variantSubset_fixref.vcf.gz', ref_hla_vcf='1000G_WGS_HLA-HD_overlappedBroad.vcf.gz', out_file='1000G_REF_phased.vcf.gz', marker_file=None, burnin=10, iterations=15):
+        cmd = f'bcftools query -l {ref_variant_vcf}'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        ref_variant_samples = result.stdout.strip().split('\n')
+        print(f'Number of samples in variant VCF: {len(ref_variant_samples)}')
+        cmd = f'bcftools query -l {ref_hla_vcf}'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        ref_hla_samples = result.stdout.strip().split('\n')
+        print(f'Number of samples in HLA VCF: {len(ref_hla_samples)}')
+        if ref_variant_samples != ref_hla_samples:
+            print('Error: Sample names in variant and HLA VCF files do not match.')
+            return
+
+        concated_file = out_file.split('_phased')[0] + '_concated.vcf.gz'
+        bfile = concated_file.split('.vcf.gz')[0]
+        pos_uniq_file = bfile + '_posUniq.vcf.gz'
+        cmd = f'bcftools concat {" ".join([ref_variant_vcf, ref_hla_vcf])} -Oz -o {concated_file}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+        self.vcf_pos_unique(concated_file)	
+        cmd = f'bcftools sort {pos_uniq_file} -Oz -o {concated_file}; bcftools index {concated_file}; rm {pos_uniq_file}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+        cmd = f'beagle gt={concated_file} out={out_file.split(".vcf")[0]} burnin={burnin} iterations={iterations}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+        os.remove(concated_file)
+        os.remove(f'{concated_file}.csi')
+
+    def phase_sample_on_reference(self, sample_vcf='GDA.vcf.gz', ref_vcf='1000G_REF_phased.vcf.gz', genome_build='GRCh37', subset_variants=True, fix_ref=True, flank=1e6):
+        out_file = sample_vcf.split('.vcf')[0] + '_phased_on_' + ref_vcf
+        if subset_variants:
+            print('subsetting sample variants to HLA region...')
+            self.subset_variants_vcf(sample_vcf, genome_build=genome_build, flank=flank)
+            sample_vcf = sample_vcf.split('.vcf')[0] + '_variantSubset.vcf.gz'
+        if fix_ref:
+            print('refix on sample VCF...')
+            self.fixref_vcf(sample_vcf, genome_build=genome_build)
+            sample_vcf = sample_vcf.split('.vcf')[0] + '_fixref.vcf.gz'
+        cmd = f'beagle gt={sample_vcf} ref={ref_vcf} out={out_file.split(".vcf")[0]}'
+        print(cmd)
+        subprocess.run(cmd, shell=True)
+
+    def get_genome_reference(self, genome_build='GRCh37'):
+        if genome_build in ['GRCh38', 'hg38']:
+            fasta_url = 'ftp://ftp.ensembl.org/pub/release-101/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz'
+        elif genome_build in ['GRCh37', 'hg19']:
+            fasta_url = 'ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz'
+        elif genome_build in ['GRCh36', 'hg18', 'NCBI36']:
+            fasta_url = 'ftp://ftp.ensembl.org/pub/release-54/fasta/homo_sapiens/dna/Homo_sapiens.NCBI36.54.dna.toplevel.fa.gz'
+        fasta_file = fasta_url.split('/')[-1].split('.gz')[0]
+        files = os.listdir('.')
+        if fasta_file not in files:
+            subprocess.run(f'wget {fasta_url}; gunzip {fasta_file}.gz', shell=True)
+        return fasta_file
+
+    def get_hla_position(self, out_file, genome_build='GRCh38'):
+        D = {}
+        if genome_build in ['GRCh38', 'hg38']:
+            gtf_url = 'ftp://ftp.ensembl.org/pub/release-101/gtf/homo_sapiens/Homo_sapiens.GRCh38.101.gtf.gz'
+
+        elif genome_build in ['GRCh37', 'hg19']:
+            gtf_url = 'ftp://ftp.ensembl.org/pub/release-75/gtf/homo_sapiens/Homo_sapiens.GRCh37.75.gtf.gz'
+
+        elif genome_build in ['hg18', 'NCBI36', 'GRCh36']:
+            #gtf_url = 'ftp://ftp.ensembl.org/pub/release-54/gtf/homo_sapiens/Homo_sapiens.NCBI36.54.gtf.gz'
+            gtf_url = None
+            # from DEEP-HLA
+            D['HLA-A'] = [('6', 30019970)]
+            D['HLA-B'] = [('6', 31431272)]
+            D['HLA-C'] = [('6', 31346171)]
+            D['HLA-DPA1'] = [('6', 33145064)]
+            D['HLA-DPB1'] = [('6', 33157346)]
+            D['HLA-DQA1'] = [('6', 32716284)]
+            D['HLA-DQB1'] = [('6', 32739039)]
+            D['HLA-DRB1'] = [('6', 32660042)]
+
+        if gtf_url:
+            files = os.listdir('.')
+            self.gtf_file = gtf_url.split('/')[-1].split('.gz')[0]
+            if self.gtf_file not in files:
+                subprocess.run(f'wget {gtf_url}; gunzip {self.gtf_file}.gz', shell=True)
+            print(self.gtf_file)
+
+            with open(self.gtf_file) as infile:
+                for line in infile:
+                    line = line.strip()
+                    fields = line.split('\t')
+                    if len(fields) > 8:
+                        chrom = fields[0]
+                        typ = fields[2]
+                        start = int(fields[3])
+                        end = int(fields[4])
+                        strand = fields[6]
+                        info = fields[8]
+                        if typ  == 'gene':
+                            gene = '.'
+                            if info.find('gene_name') != -1:
+                                for attr in info.split(';'):
+                                    attr = attr.strip()
+                                    if attr.startswith('gene_name'):
+                                        gene = attr.split(' ')[1].replace('"', '')
+                            if chrom in self.hla_chrom and gene in self.HLA:
+                                D.setdefault(gene, [])
+                                D[gene].append((chrom, start, end, strand))
+        L = []
+        for gene in self.HLA:
+            if gene in D:
+                item = sorted(D[gene], key=lambda x: x[1])
+                L.append([gene, item[0][0], item[0][1]])
+        df = pd.DataFrame(L)
+        df.to_csv(out_file, sep='\t', header=False, index=False)
+
+    def vcf_pos_unique(self, in_file):
+        seen = {}
+        out_file = in_file.replace('.vcf', '_posUniq.vcf')
+        if in_file.endswith('.vcf.gz'):
+            infile = gzip.open(in_file, 'rt')
+            outfile = gzip.open(out_file, 'wt')
+        else:
+            infile = open(in_file, 'r')
+            outfile = open(out_file, 'w')
+
+        for line in infile:
+            line = line.strip()
+            if line.startswith('#'):
+                outfile.write(line + '\n')
             else:
-                new_id = '.'
-                print(f"Warning: unexpected allele: {allele} excluded")
-            new_ids.append(new_id)
-        df['id_ref'] = new_ids
-        df = df[df['id_ref'] != '.'].copy()
-        return df
-
-    def prepare_to_predict(self, features_file='features.txt', out_file='to_predict.txt'):
-        df_features = pd.read_table(features_file, header=0, sep='\t', low_memory=False)
-        features = []
-        for n in range(1, df_features.shape[1], 2):
-            fields = df_features.columns[n].split('_')
-            k = fields[1]
-            if k not in features:
-                features.append(k)
-
-        df = pd.merge(self.ref_bim, self.sample_phased, left_on='id_ref', right_on='id_sample')
-        wh = df['id_ref'].isin(features)
-        df = df[wh]
-        if df.shape[0] != len(features):
-            print('Warning: some features are missing in the sample phased data')
-
-        M = np.zeros((len(self.sample_ids), len(features) * 2), dtype=int)
-        H = []
-        idx_start = 8
-        for n in range(idx_start, df.shape[1], 2):
-            for j in range(2):
-                wh = (df.iloc[:, n + j] == df['A1_ref']).values.astype(int)
-                for m in range(len(wh)):
-                    M[(n - idx_start) // 2, m * 2 + j] = wh[m]
-                    if j == 0 and n == idx_start:
-                        id_ref = df['id_ref'].iloc[m]
-                        H.append(f'A1_{id_ref}')
-                        H.append(f'A2_{id_ref}')
-
-        df = pd.DataFrame(M)
-        df.index = self.sample_ids
-        df.index.name = 'sample'
-        df.columns = H
-        df.to_csv(out_file, sep='\t', index=True, header=True)
-        print(f'features data to predict saved to {out_file}')
+                fields = line.split("\t")
+                chrom = fields[0]
+                pos = int(fields[1])
+                key = (chrom, pos)
+                count = seen.get(key, 0)
+                seen[key] = count + 1
+                new_pos = pos + count
+                fields[1] = str(new_pos)
+                outfile.write('\t'.join(fields) + '\n')
+        infile.close()
+        outfile.close()
 
 if __name__ == '__main__':
-    dp = DataPreprocessor()
-    #dp = DataPreprocessor(ref_bim='HM_CEU_REF.bim', sample_bim='1958BC.bim', ref_phased='HM_CEU_REF.bgl.phased')
-    #dp.make_features()
-    #dp.make_labels()
-    #dp.make_masks()
+    pass

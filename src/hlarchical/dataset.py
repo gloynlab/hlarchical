@@ -1,7 +1,7 @@
 import os
 import sys
+import numpy as np
 import pandas as pd
-import gzip
 import yaml
 import torch
 from torch.utils.data import Dataset
@@ -11,15 +11,22 @@ from sklearn.model_selection import KFold
 class CustomDataset(Dataset):
     def __init__(self, features_file='features.txt', labels_file='labels.txt', maps_file='maps.txt', out_file='hla'):
         self.out_file = out_file
-        df = pd.read_table(features_file, header=0, sep='\t')
-        mat = df.iloc[:, 1:].values
-        mat = mat.reshape(mat.shape[0], mat.shape[1]//2, 2)
-        self.X = torch.tensor(mat, dtype=torch.float32).permute(0, 2, 1)
+        df_features = pd.read_table(features_file, header=0, sep='\t')
+        df_labels = pd.read_table(labels_file, header=0, sep='\t')
+        if df_features.iloc[:, 0].tolist() != df_labels.iloc[:, 0].tolist():
+            raise ValueError('The sample column of features and labels must be the same')
 
-        df = pd.read_table(labels_file, header=0, sep='\t')
-        mat = df.iloc[:, 1:].values
-        mat = mat.reshape(mat.shape[0], mat.shape[1]//2, 2)
-        self.y = torch.tensor(mat, dtype=torch.long).permute(0, 2, 1)
+        mat = []
+        for n in range(1, df_features.shape[1]):
+            mat.append(df_features.iloc[:, n].str.split('|', expand=True).astype(int).values)
+        mat = np.array(mat).transpose(1, 2, 0)
+        self.X = torch.tensor(mat, dtype=torch.float32)
+
+        mat = []
+        for n in range(1, df_labels.shape[1]):
+            mat.append(df_labels.iloc[:, n].str.split('|', expand=True).astype(int).values)
+        mat = np.array(mat).transpose(1, 2, 0)
+        self.y = torch.tensor(mat, dtype=torch.long)
         print(f'X shape: {self.X.shape}')
         print(f'y shape: {self.y.shape}')
         self.random_seed = 42
@@ -32,7 +39,7 @@ class CustomDataset(Dataset):
         y = self.y[idx]
         return(X, y)
 
-    def split_save_dataset(self, ratio=[0.8, 0.1, 0.1], batch_size=32, shuffle=True, num_workers=0, n_cv=0):
+    def split_save_dataset(self, ratio=[0.8, 0.2], batch_size=32, shuffle=True, num_workers=0, n_cv=0):
         self.train_file = self.out_file + '_dataset_train.pt'
         self.val_file = self.out_file + '_dataset_val.pt'
         self.test_file = self.out_file + '_dataset_test.pt'
@@ -74,5 +81,5 @@ class CustomDataset(Dataset):
 
 if __name__ == '__main__':
     ds = CustomDataset()
-    ds.split_save_dataset(ratio=[0.8, 0.1, 0.1])
+    ds.split_save_dataset(ratio=[0.8, 0.2])
 

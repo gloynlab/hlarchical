@@ -174,9 +174,11 @@ class Trainer:
             maps[head][label] = allele
 
         df = pd.read_table(pred_file, header=0, sep='\t')
-        mat = df.iloc[:, 1:].values
-        mat = mat.reshape(mat.shape[0], mat.shape[1]//2, 2)
-        X = torch.tensor(mat, dtype=torch.float32).permute(0, 2, 1)
+        mat = []
+        for n in range(1, df.shape[1]):
+            mat.append(df.iloc[:, n].str.split('|', expand=True).astype(int).values)
+        mat = np.array(mat).transpose(1, 2, 0)
+        X = torch.tensor(mat, dtype=torch.float32)
         self.X = X.to(self.device)
 
         ouFile = open(out_file, 'w')
