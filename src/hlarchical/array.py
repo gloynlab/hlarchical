@@ -177,8 +177,8 @@ class Array():
                 if df.shape[0] > 0 and df.shape[1] > 1:
                     item1 = df.iloc[0, 0].split(',')
                     item2 = df.iloc[0, 1].split(',')
-                    item1x = set(':'.join([x.replace('*', ':').split(':')[0:int(digit/2) + 1]) for x in item1])
-                    item2x = set(':'.join([x.replace('*', ':').split(':')[0:int(digit/2) + 1]) for x in item2])
+                    item1x = set([':'.join(x.replace('*', ':').split(':')[0:int(digit/2) + 1]) for x in item1])
+                    item2x = set([':'.join(x.replace('*', ':').split(':')[0:int(digit/2) + 1]) for x in item2])
                     if len(item1x) > 1 or len(item2x) > 1:
                         print(f'Warning: multiple alleles found for sample {sample} and HLA {hla} in file {f}. Only the first allele will be used. Allele1: {item1}, Allele2: {item2}', flush=True)
 
