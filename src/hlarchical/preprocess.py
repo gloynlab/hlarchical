@@ -10,6 +10,8 @@ class Preprocessor:
     def hlarchical_table_to_vcf(self, in_file='1000G_WGS_HLA-HD.txt', genome_build='GRCh37', hla_pos_file='HLA_gene_position_GRCh37.txt'):
         if not os.path.exists(hla_pos_file):
             self.get_hla_position(out_file=hla_pos_file, genome_build=genome_build)
+        if not os.path.exists(hla_pos_file):
+            raise FileNotFoundError(f'Error: HLA position file {hla_pos_file} not found')
         df_pos = pd.read_table(hla_pos_file, header=None, sep='\t', dtype=str)
         pos_dict = {}
         for n in range(df_pos.shape[0]):
@@ -87,10 +89,12 @@ class Preprocessor:
         print(cmd)
         subprocess.run(cmd, shell=True)
 
-    def subset_variants_vcf(self, vcf_file, genome_build='GRCh37', flank=1e6, n_threads=4):
-        hla_pos_file=f'HLA_gene_position_{genome_build}.txt' 
-        if os.path.exists(hla_pos_file) == False:
+    def subset_variants_vcf(self, vcf_file, genome_build='GRCh37', hla_pos_file='HLA_gene_position_GRCh37.txt', flank=1e6, n_threads=4):
+        if not os.path.exists(hla_pos_file):
             self.get_hla_position(out_file=hla_pos_file, genome_build=genome_build)
+        if not os.path.exists(hla_pos_file):
+            raise FileNotFoundError(f'Error: HLA position file {hla_pos_file} not found')
+
         out_file = vcf_file.split('.vcf.gz')[0] + '_variantSubset.vcf.gz'
         df = pd.read_table(hla_pos_file, header=None, sep='\t')
         chrom = df.iloc[0, 1].astype(str)
