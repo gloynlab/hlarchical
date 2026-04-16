@@ -1,59 +1,99 @@
 import argparse
 from .preprocess import Preprocessor
 from .process import Processor
-
 from .dataset import CustomDataset
 from .trainer import Trainer
-from .utils import *
 from .array import Array
+from .utils import *
 
 def get_parser():
     formatter_class = argparse.ArgumentDefaultsHelpFormatter
     parser = argparse.ArgumentParser(formatter_class=formatter_class)
     subparsers = parser.add_subparsers(dest='command', required=True)
 
-    p1 = subparsers.add_parser("get-hlarchical-table", help="get the table in the format defined by hlarchical")
-    p1.add_argument('--input', type=str, default='data/1958BC_Euro.bgl.phased', help='input file')
-    p1.add_argument('--output', type=str, default='data/1958BC_Euro_digit4.txt', help='output file')
-    p1.add_argument('--digit', type=int, default=4, help='digit level for HLA alleles')
-    p1.add_argument('--from_tool', type=str, default='snp2hla', help='the tool that generated the input file')
+    p1 = subparsers.add_parser("phase-sample-on-ref", help="phase the sample data on the reference panel")
+    p1.add_argument('--vcf', type=str, default='input.vcf.gz', help='input vcf file of the sample data to be predicted')
+    p1.add_argument('--ref', type=str, default='1000G_REF_phased.vcf.gz', help='the phased reference panel, generated using the make_reference function')
+    p1.add_argument('--genome_build', type=str, default='GRCh37', help='the genome build of the sample array data, must be the same as the reference panel')
 
-    p2 = subparsers.add_parser("run-snp2hla", help="run SNP2HLA on array data")
-    p2.add_argument('--input', type=str, default='1958BC', help='input file prefix')
-    p2.add_argument('--ref', type=str, default='HM_CEU_REF', help='reference panel prefix, can be HM_CEU_REF or Pan-Asian_REF currently')
-    p2.add_argument('--output', type=str, default='1958BC_European_SNP2HLA', help='output file prefix')
+    p2 = subparsers.add_parser("get-sample-features", help="get the features of the sample data for prediction")
+    p2.add_argument('--vcf', type=str, default='input_phased.vcf.gz', help='the phased sample data')
+    p2.add_argument('--features', type=str, default='features_list.txt', help='the list of features used in the model training, generated using the make_features function')
+    p2.add_argument('--output', type=str, default='to_predict.txt', help='the output file for the features of the sample data, in the same format as the feature file used in the model training')
 
-    p3 = subparsers.add_parser("run-hibag", help="run HIBAG on array data, HIBAG package should be installed in R environment")
-    p3.add_argument('--input', type=str, default='1958BC', help='input file prefix')
-    p3.add_argument('--ref', type=str, default='European', help='reference panel prefix, can be European, Asian, African, or Hispanic currently')
-    p3.add_argument('--output', type=str, default='1958BC_European_HIBAG', help='output file prefix')
-    p3.add_argument('--Renv', type=str, default='R4.5', help='conda R environment name where HIBAG is installed')
+    p3 = subparsers.add_parser("predict", help="predict HLA alleles using the trained model")
+    p3.add_argument('--input', type=str, default='to_predict.txt', help='the input file for prediction, generated using the get-sample-features command')
+    p3.add_argument('--output', type=str, default='predicted.txt', help='the output file for the predicted HLA alleles')
+    p3.add_argument('--model_name', type=str, default='mlp', help='the name of the model to be used for prediction')
+    p3.add_argument('--epoch', type=int, default=200, help='the epoch of the trained model to be used for prediction')
+    p3.add_argument('--config_file', type=str, default='config.yaml', help='the config file used in the model training')
+    p3.add_argument('--maps_file', type=str, default='maps.txt', help='the maps file used in the model training, generated using the make_maps function')
 
-    p4 = subparsers.add_parser("run-deephla", help="run CNN-based DEEP*HLA, to be implemented")
-    p4.add_argument('--mode', type=str, default='train', help='mode: train or impute')
-    p4.add_argument('--input', type=str, default='1958BC_Pan-Asian_REF', help='input file prefix')
-    p4.add_argument('--ref', type=str, default='Pan-Asian_REF', help='reference panel prefix, can be HM_CEU_REF or Pan-Asian_REF currently')
-    p4.add_argument('--subset', type=str, default=None, help='subset the input to the HLA regions according to the reference genome, e.g., chr6:28510120-33480577 on GRCh37')
-    p4.add_argument('--model_json', type=str, default='Pan-Asian_REF.model.json', help='the config file of the model')
-    p4.add_argument('--model_dir', type=str, default='model', help='the output directory of the trained model')
+    p4 = subparsers.add_parser("get-hlarchical-table", help="get the table in the format defined by hlarchical")
+    p4.add_argument('--input', type=str, default='data/1958BC_Euro.bgl.phased', help='input file')
+    p4.add_argument('--output', type=str, default='data/1958BC_Euro_digit4.txt', help='output file')
+    p4.add_argument('--digit', type=int, default=4, help='digit level for HLA alleles')
+    p4.add_argument('--from_tool', type=str, default='snp2hla', help='the tool that generated the input file')
+
+    p11 = subparsers.add_parser("run-snp2hla", help="run SNP2HLA on array data")
+    p11.add_argument('--input', type=str, default='1958BC', help='input file prefix')
+    p11.add_argument('--ref', type=str, default='HM_CEU_REF', help='reference panel prefix, can be HM_CEU_REF or Pan-Asian_REF currently')
+    p11.add_argument('--output', type=str, default='1958BC_European_SNP2HLA', help='output file prefix')
+
+    p12 = subparsers.add_parser("run-hibag", help="run HIBAG on array data, HIBAG package should be installed in R environment")
+    p12.add_argument('--input', type=str, default='1958BC', help='input file prefix')
+    p12.add_argument('--ref', type=str, default='European', help='reference panel prefix, can be European, Asian, African, or Hispanic currently')
+    p12.add_argument('--output', type=str, default='1958BC_European_HIBAG', help='output file prefix')
+    p12.add_argument('--Renv', type=str, default='R4.5', help='conda R environment name where HIBAG is installed')
+
+    p13 = subparsers.add_parser("run-deephla", help="run CNN-based DEEP*HLA, to be implemented")
+    p13.add_argument('--mode', type=str, default='train', help='mode: train or impute')
+    p13.add_argument('--input', type=str, default='1958BC_Pan-Asian_REF', help='input file prefix')
+    p13.add_argument('--ref', type=str, default='Pan-Asian_REF', help='reference panel prefix, can be HM_CEU_REF or Pan-Asian_REF currently')
+    p13.add_argument('--subset', type=str, default=None, help='subset the input to the HLA regions according to the reference genome, e.g., chr6:28510120-33480577 on GRCh37')
+    p13.add_argument('--model_json', type=str, default='Pan-Asian_REF.model.json', help='the config file of the model')
+    p13.add_argument('--model_dir', type=str, default='model', help='the output directory of the trained model')
 
     return parser
 
 def main():
     parser = get_parser()
     args = parser.parse_args()
-    if args.command == 'get-hlarchical-table':
-        ar = Array()
-        ar.get_hlarchical_table(in_file=args.input, out_file=args.output, digit=args.digit, from_tool=args.from_tool)
+
+    if args.command == 'phase-sample-on-ref':
+        hla = Preprocessor()
+        sample_vcf = args.vcf
+        ref_vcf = args.ref
+        genome_build = args.genome_build
+        hla.phase_sample_on_reference(sample_vcf=sample_vcf, ref_vcf=ref_vcf, genome_build=genome_build)
+    elif args.command == 'get-sample-features':
+        hla = Processor()
+        sample_vcf = args.vcf
+        features_file = args.features
+        out_file = args.output
+        hla.get_sample_features(sample_vcf=sample_vcf, features_file=features_file, out_file=out_file)
+    elif args.command == 'predict':
+        in_file = args.input
+        out_file = args.output
+        model_name = args.model_name
+        config_file = args.config_file
+        epoch = args.epoch
+        maps_file = args.maps_file
+        hla = Trainer(config_file=config_file, model_name=model_name)
+        hla.predict(pred_file=in_file, out_file=out_file, epoch=epoch, maps_file=maps_file)
+
+    elif args.command == 'get-hlarchical-table':
+        hla = Array()
+        hla.get_hlarchical_table(in_file=args.input, out_file=args.output, digit=args.digit, from_tool=args.from_tool)
     elif args.command == 'run-snp2hla':
-        ar = Array()
-        ar.run_snp2hla(in_file=args.input, ref_file=args.ref, out_file=args.output)
+        hla = Array()
+        hla.run_snp2hla(in_file=args.input, ref_file=args.ref, out_file=args.output)
     elif args.command == 'run-hibag':
-        ar = Array()
-        ar.run_hibag(in_file=args.input, ref=args.ref, out_file=args.output, Renv=args.Renv)
+        hla = Array()
+        hla.run_hibag(in_file=args.input, ref=args.ref, out_file=args.output, Renv=args.Renv)
     elif args.command == 'run-deephla':
-        ar = Array()
-        ar.run_deephla(mode=args.mode, in_file=args.input, ref_file=args.ref, subset=args.subset,
+        hla = Array()
+        hla.run_deephla(mode=args.mode, in_file=args.input, ref_file=args.ref, subset=args.subset,
                        model_json=args.model_json, model_dir=args.model_dir)
 
 if __name__ == '__main__':

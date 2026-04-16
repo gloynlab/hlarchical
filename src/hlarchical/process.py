@@ -1,6 +1,7 @@
+import os
+import gzip
 import numpy as np
 import pandas as pd
-import gzip
 
 class Processor:
     def __init__(self, ref_phased='1000G_REF_phased.vcf.gz', label_include=['HLA'], feature_exclude=['HLA'], expert_by='ld'):
@@ -53,7 +54,9 @@ class Processor:
         df = self.ref_phased_feature.iloc[:, 9:].T
         df.columns = self.ref_phased_feature['ID'] + '_' + self.ref_phased_feature['POS'].astype(str)
         df.index.name = 'sample'
-        df.to_csv(out_file, sep='\t', index=True, header=True)
+        df.to_csv(ut_file, sep='\t', index=True, header=True)
+        out_file_list = out_file.split('.txt')[0] + '_list.txt'
+        df.columns[1:].to_series().to_csv(out_file_list, index=False, header=False)
 
     def make_maps(self, out_file='maps.txt'):
         D = {}
@@ -209,11 +212,14 @@ class Processor:
         df.to_csv(out_file, sep='\t', index=False, header=True)
         print(f'processed masks data: {out_file}')
 
-    def get_features_of_samples(self, sample_phased='', features_file='features.txt', out_file='to_predict.txt'):
-        df = self.read_vcf(sample_phased)
-        df_features = pd.read_table(features_file, header=0, sep='\t', low_memory=False)
+    def get_sample_features(self, sample_vcf, features_file='model_features.txt', out_file='to_predict.txt'):
+        if not os.path.exists(features_file):
+            raise FileNotFoundError(f'Features file {features_file} not found.')
+
+        df = self.read_vcf(sample_vcf)
         samples = df.columns[9:].tolist()
-        features = df_features.columns[1:].tolist()
+        df_features = pd.read_table(features_file, header=None, sep='\t', low_memory=False)
+        features = df_features.iloc[:, 0].tolist()
         D = {}
         for n in range(df.shape[0]):
             k = str(df['ID'].iloc[n]) + '_' + str(df['POS'].iloc[n])
@@ -229,7 +235,7 @@ class Processor:
         df.index.name = 'sample'
         df.columns = features
         df.to_csv(out_file, sep='\t', index=True, header=True)
-        print(f'features data to predict saved to {out_file}')
+        print(f'sample features saved to {out_file}')
 
     def read_vcf(self, in_file):
         if in_file.endswith('vcf.gz'):
