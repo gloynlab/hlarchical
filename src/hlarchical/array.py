@@ -349,16 +349,17 @@ class Array():
                         if os.path.exists(in_file):
                             df = pd.read_csv(in_file, sep='\t', header=0)
 
-                            # assuming sample_id contains FID, if all SampleID starts with '\d-'
-                            sample_id_with_fid = df['SampleID'].str.contains(r'^\d+-', na=False).all()
-                            if sample_id_with_fid:
+                            # assuming sample_id contains FID, if all SampleID starts with '\d+-' or '\d+_'
+                            sample_id_with_fid_dash = df['SampleID'].str.contains(r'^\d+-', na=False).all()
+                            sample_id_with_fid_underscore = df['SampleID'].str.contains(r'^\d+_', na=False).all()
+                            if sample_id_with_fid or sample_id_with_fid_underscore:
                                 print(f'FID is being excluded from SampleID in {in_file}', flush=True)
 
                             for i, row in df.iterrows():
                                 sample_id = row['SampleID']
-                                if sample_id_with_fid:
+                                if sample_id_with_fid_dash:
                                     sample_id = '-'.join(sample_id.split('-')[1:])
-                                if in_file.find('hlarchical') != -1:
+                                elif sample_id_with_fid_underscore:
                                     sample_id = '_'.join(sample_id.split('_')[1:])
                                 A[sample_id] = array
                                 hla = row['HLA']
