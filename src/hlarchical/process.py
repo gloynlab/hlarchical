@@ -158,7 +158,6 @@ class Processor:
         df.to_csv(out_file, sep='\t', index=True, header=True)
 
     def make_masks(self, out_file='masks.txt', features_file='features.txt', flank=500000):
-        print(self.ref_phased_target)
         H = {}
         for n in range(self.ref_phased_target.shape[0]):
             gene = self.ref_phased_target['ID'].iloc[n].split(':')[0]

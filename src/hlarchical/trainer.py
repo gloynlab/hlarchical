@@ -164,10 +164,13 @@ class Trainer:
         self.eval(epoch, maps_file=maps_file, test=True)
 
     def predict(self, epoch=None, pred_file='to_predict.txt', out_file='predicted.txt', maps_file='maps.txt', split_by_digit=True):
+        maps = maps_file
         if not os.path.exists(maps_file):
-            raise FileNotFoundError(f'maps file {maps_file} not found!')
+            maps = data_dir + '/' + maps_file
+            if not os.path.exists(maps):
+                raise FileNotFoundError(f'maps file {maps_file} or {maps} not found!')
 
-        df = pd.read_table(maps_file, header=0, sep='\t')
+        df = pd.read_table(maps, header=0, sep='\t')
         maps = {}
         for n in range(df.shape[0]):
             head = df['head'].iloc[n]
@@ -313,14 +316,16 @@ class Trainer:
         torch.save(checkpoint, out_file) 
 
     def load_checkpoint(self, epoch):
-        in_file = f'{self.model_name}_ckpt_{epoch}.pt'
-        if os.path.exists(in_file):
-            print(f'loading checkpoint from {in_file}')
-            checkpoint = torch.load(in_file, map_location=self.device)
-            self.model.load_state_dict(checkpoint['model_state_dict'])
-            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        else:
-            print(f'checkpoint file {in_file} not found!')
+        ckpt_file = f'{self.model_name}_ckpt_{epoch}.pt'
+        in_file = ckpt_file
+        if not os.path.exists(ckpt_file):
+            in_file = data_dir + '/' + ckpt_file
+            if not os.path.exists(in_file):
+                raise FileNotFoundError(f'checkpoint file {ckpt_file} or {in_file} not found!')
+        print(f'loading checkpoint from {in_file}')
+        checkpoint = torch.load(in_file, map_location=self.device)
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
     def load_yaml(self, config_file):
         if not os.path.exists(config_file):

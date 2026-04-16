@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
+from .utils import *
 
 class MLPBackbone(nn.Module):
     def __init__(
@@ -149,14 +150,16 @@ class HierarchicalHLA(nn.Module):
         self.moe = False
         self.masks = {}
         if hasattr(cfg, 'masks_file'):
-            if os.path.exists(cfg.masks_file):
-                df = pd.read_table(cfg.masks_file, header=0, sep='\t')
-                for n in range(df.shape[0]):
-                    mask = df.iloc[n, 1:].values.astype(bool)
-                    self.masks[df.iloc[n, 0]] = mask
-                    cfg.input_length = len(mask)
-            else:
-                print(f'no masks file found {cfg.masks_file}')
+            masks_file = cfg.masks_file
+            if not os.path.exists(cfg.masks_file):
+                masks_file = data_dir + '/' + cfg.masks_file
+                if not os.path.exists(masks_file):
+                    raise FileNotFoundError(f'no masks file found at {cfg.masks_file} or {masks_file}')
+            df = pd.read_table(masks_file, header=0, sep='\t')
+            for n in range(df.shape[0]):
+                mask = df.iloc[n, 1:].values.astype(bool)
+                self.masks[df.iloc[n, 0]] = mask
+                cfg.input_length = len(mask)
         else:
             print('input_length needed when masks file not provided')
 
@@ -167,16 +170,18 @@ class HierarchicalHLA(nn.Module):
         self.maps = {}
         self.expert_to_head = {}
         if hasattr(cfg, 'maps_file'):
-            if os.path.exists(cfg.maps_file):
-                df = pd.read_table(cfg.maps_file)
-                for n in range(df.shape[0]):
-                    head = df['head'].iloc[n]
-                    expert = df['expert'].iloc[n]
-                    label = df['label'].iloc[n]
-                    self.maps[head] = [label, expert]
-                    self.expert_to_head[expert] = head
-            else:
-                print(f'no maps file found {cfg.maps_file}')
+            maps_file = cfg.maps_file
+            if not os.path.exists(cfg.maps_file):
+                maps_file = data_dir + '/' + cfg.maps_file
+                if not os.path.exists(maps_file):
+                    raise FileNotFoundError(f'no maps file found at {cfg.maps_file} or {maps_file}')
+            df = pd.read_table(maps_file)
+            for n in range(df.shape[0]):
+                head = df['head'].iloc[n]
+                expert = df['expert'].iloc[n]
+                label = df['label'].iloc[n]
+                self.maps[head] = [label, expert]
+                self.expert_to_head[expert] = head
 
         if cfg.backbone == 'mlp':
             backbone_class = MLPBackbone
