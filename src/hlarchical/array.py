@@ -471,7 +471,7 @@ class Array():
         df_ancestry.columns = ['HLA', 'ancestry', 'method', 'score', 'genotyping', 'typing']
         df_ancestry.to_csv(out_file_ancestry, sep='\t', index=False, header=True)
 
-    def bar_plot_score(self, in_file, digits=[2, 4], methods=['SNP2HLA', 'HIBAG', 'hlarchicalMLP', 'hlarchicalCNN']):
+    def bar_plot_score(self, in_file, digits=[2, 4], methods=['SNP2HLA', 'HIBAG', 'hlarchicalMLP', 'hlarchicalCNN'], cmap='colorblind'):
         df = pd.read_table(in_file, header=0, sep='\t')
         for digit in digits:
             for method in methods:
@@ -479,7 +479,8 @@ class Array():
                 df3 = df2.loc[~df2['HLA'].isin(['HLA-DPA1'])]
                 plt.figure()
                 if 'ancestry' in df2.columns:
-                    ax = sns.barplot(x='HLA', y='score', hue='ancestry', data=df2)
+                    hue_order = sorted(df2['ancestry'].unique()) if 'ancestry' in df2.columns else None
+                    ax = sns.barplot(x='HLA', y='score', hue='ancestry', data=df2, palette=cmap, hue_order=hue_order)
                     plt.legend(bbox_to_anchor=(0.5, 0.995), loc='upper center', ncols=5)
                 else:
                     ax = sns.barplot(x='HLA', y='score', data=df2)
@@ -490,11 +491,9 @@ class Array():
                 txt2 = f'Average accuracy excluding HLA-DPA1: {score_avg2:.4f}'
                 print([in_file, digit, method, txt], flush=True)
                 print([in_file, digit, method, txt2], flush=True)
-                ax.text(0.98, 0.07, txt, ha='right', va='bottom', transform=ax.transAxes, fontsize=10)
-                ax.text(0.98, 0.02, txt2, ha='right', va='bottom', transform=ax.transAxes, fontsize=10, weight='bold')
 
                 ax.set_ylim(0, 1.2)
-                ax.set_title(f'Accuracy at {digit}-digit resolution using {method}')
+                ax.set_title(f'Average accuracy:{score_avg:.4f} ({method} {digit}digit)')
                 ax.set_ylabel('Score')
                 ax.set_xlabel('')
                 ax.tick_params(axis='x', rotation=90)
