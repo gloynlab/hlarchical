@@ -6,11 +6,9 @@ import gzip
 class Preprocessor:
     def __init__(self):
         self.HLA = ['HLA-A', 'HLA-B', 'HLA-C', 'HLA-DPA1', 'HLA-DPB1', 'HLA-DQA1', 'HLA-DQB1', 'HLA-DRB1']
-        self.hla_chrom = ['6', 'chr6']
 
-    def hlarchical_table_to_vcf(self, in_file='1000G_WGS_HLA-HD.txt', genome_build='GRCh37', hla_pos_file='HLA_gene_position.txt'):
-        hla_pos_file = hla_pos_file.split('.txt')[0] + f'_{genome_build}.txt'
-        if os.path.exists(hla_pos_file) == False:
+    def hlarchical_table_to_vcf(self, in_file='1000G_WGS_HLA-HD.txt', genome_build='GRCh37', hla_pos_file='HLA_gene_position_GRCh37.txt'):
+        if not os.path.exists(hla_pos_file):
             self.get_hla_position(out_file=hla_pos_file, genome_build=genome_build)
         df_pos = pd.read_table(hla_pos_file, header=None, sep='\t', dtype=str)
         pos_dict = {}
@@ -133,7 +131,7 @@ class Preprocessor:
         cmd = f'bcftools concat {" ".join([ref_variant_vcf, ref_hla_vcf])} -Oz -o {concated_file}'
         print(cmd)
         subprocess.run(cmd, shell=True)
-        self.vcf_pos_unique(concated_file)	
+        self.unique_vcf_pos(concated_file)	
         cmd = f'bcftools sort {pos_uniq_file} -Oz -o {concated_file}; bcftools index {concated_file}; rm {pos_uniq_file}'
         print(cmd)
         subprocess.run(cmd, shell=True)
@@ -158,47 +156,30 @@ class Preprocessor:
         subprocess.run(cmd, shell=True)
 
     def get_genome_reference(self, genome_build='GRCh37'):
-        if genome_build in ['GRCh38', 'hg38']:
-            fasta_url = 'ftp://ftp.ensembl.org/pub/release-101/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz'
-        elif genome_build in ['GRCh37', 'hg19']:
+        if genome_build in ['GRCh37']:
             fasta_url = 'ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz'
-        elif genome_build in ['GRCh36', 'hg18', 'NCBI36']:
-            fasta_url = 'ftp://ftp.ensembl.org/pub/release-54/fasta/homo_sapiens/dna/Homo_sapiens.NCBI36.54.dna.toplevel.fa.gz'
+        elif genome_build in ['GRCh38']:
+            fasta_url = 'ftp://ftp.ensembl.org/pub/release-101/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz'
         fasta_file = fasta_url.split('/')[-1].split('.gz')[0]
         files = os.listdir('.')
         if fasta_file not in files:
             subprocess.run(f'wget {fasta_url}; gunzip {fasta_file}.gz', shell=True)
         return fasta_file
 
-    def get_hla_position(self, out_file, genome_build='GRCh38'):
+    def get_hla_position(self, out_file, genome_build='GRCh37', hla_chroms=['6', 'chr6']):
         D = {}
-        if genome_build in ['GRCh38', 'hg38']:
+        if genome_build in ['GRCh37']:
+            gtf_url = 'ftp://ftp.ensembl.org/pub/release-75/gtf/homo_sapiens/Homo_sapiens.GRCh37.75.gtf.gz'
+        elif genome_build in ['GRCh38']:
             gtf_url = 'ftp://ftp.ensembl.org/pub/release-101/gtf/homo_sapiens/Homo_sapiens.GRCh38.101.gtf.gz'
 
-        elif genome_build in ['GRCh37', 'hg19']:
-            gtf_url = 'ftp://ftp.ensembl.org/pub/release-75/gtf/homo_sapiens/Homo_sapiens.GRCh37.75.gtf.gz'
-
-        elif genome_build in ['hg18', 'NCBI36', 'GRCh36']:
-            #gtf_url = 'ftp://ftp.ensembl.org/pub/release-54/gtf/homo_sapiens/Homo_sapiens.NCBI36.54.gtf.gz'
-            gtf_url = None
-            # from DEEP-HLA
-            D['HLA-A'] = [('6', 30019970)]
-            D['HLA-B'] = [('6', 31431272)]
-            D['HLA-C'] = [('6', 31346171)]
-            D['HLA-DPA1'] = [('6', 33145064)]
-            D['HLA-DPB1'] = [('6', 33157346)]
-            D['HLA-DQA1'] = [('6', 32716284)]
-            D['HLA-DQB1'] = [('6', 32739039)]
-            D['HLA-DRB1'] = [('6', 32660042)]
-
         if gtf_url:
-            files = os.listdir('.')
-            self.gtf_file = gtf_url.split('/')[-1].split('.gz')[0]
-            if self.gtf_file not in files:
-                subprocess.run(f'wget {gtf_url}; gunzip {self.gtf_file}.gz', shell=True)
-            print(self.gtf_file)
+            gtf_file = gtf_url.split('/')[-1].split('.gz')[0]
+            if not os.path.exists(gtf_file):
+                subprocess.run(f'wget {gtf_url}; gunzip {gtf_file}.gz', shell=True)
+            print(f'downloaded {gtf_file}')
 
-            with open(self.gtf_file) as infile:
+            with open(gtf_file) as infile:
                 for line in infile:
                     line = line.strip()
                     fields = line.split('\t')
@@ -216,9 +197,10 @@ class Preprocessor:
                                     attr = attr.strip()
                                     if attr.startswith('gene_name'):
                                         gene = attr.split(' ')[1].replace('"', '')
-                            if chrom in self.hla_chrom and gene in self.HLA:
+                            if chrom in hla_chroms and gene in self.HLA:
                                 D.setdefault(gene, [])
                                 D[gene].append((chrom, start, end, strand))
+            os.remove(gtf_file)
         L = []
         for gene in self.HLA:
             if gene in D:
@@ -227,7 +209,7 @@ class Preprocessor:
         df = pd.DataFrame(L)
         df.to_csv(out_file, sep='\t', header=False, index=False)
 
-    def vcf_pos_unique(self, in_file):
+    def unique_vcf_pos(self, in_file):
         seen = {}
         out_file = in_file.replace('.vcf', '_posUniq.vcf')
         if in_file.endswith('.vcf.gz'):
