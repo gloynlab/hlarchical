@@ -1,6 +1,3 @@
-import os
-import numpy as np
-import pandas as pd
 import torch
 import torch.nn as nn
 from .utils import *
@@ -145,43 +142,35 @@ class SpliceAIBackbone(torch.nn.Module):
         return out
 
 class HierarchicalHLA(nn.Module):
-    def __init__(self, cfg):
+    def __init__(self, cfg, maps_file='maps.txt', masks_file='masks.txt'):
         super().__init__()
         self.moe = False
         self.masks = {}
-        if hasattr(cfg, 'masks_file'):
-            masks_file = cfg.masks_file
-            if not os.path.exists(cfg.masks_file):
-                masks_file = data_dir + '/' + cfg.masks_file
-                if not os.path.exists(masks_file):
-                    raise FileNotFoundError(f'no masks file found at {cfg.masks_file} or {masks_file}')
+
+        if masks_file is not None:
             df = pd.read_table(masks_file, header=0, sep='\t')
             for n in range(df.shape[0]):
-                mask = df.iloc[n, 1:].values.astype(bool)
-                self.masks[df.iloc[n, 0]] = mask
-                cfg.input_length = len(mask)
+                m = df.iloc[n, 1:].values.astype(bool)
+                self.masks[df.iloc[n, 0]] = m
+                cfg.input_length = len(m)
         else:
-            print('input_length needed when masks file not provided')
+            if not hasattr(cfg, 'input_length'):
+                raise ValueError('input_length needed when masks file not provided')
 
         if hasattr(cfg, 'moe') and cfg.moe:
             self.moe = True
-            print(f'using Mixture of Experts with masks from {cfg.masks_file}')
+            print(f'using Mixture of Experts')
 
         self.maps = {}
         self.expert_to_head = {}
-        if hasattr(cfg, 'maps_file'):
-            maps_file = cfg.maps_file
-            if not os.path.exists(cfg.maps_file):
-                maps_file = data_dir + '/' + cfg.maps_file
-                if not os.path.exists(maps_file):
-                    raise FileNotFoundError(f'no maps file found at {cfg.maps_file} or {maps_file}')
-            df = pd.read_table(maps_file)
-            for n in range(df.shape[0]):
-                head = df['head'].iloc[n]
-                expert = df['expert'].iloc[n]
-                label = df['label'].iloc[n]
-                self.maps[head] = [label, expert]
-                self.expert_to_head[expert] = head
+
+        df = pd.read_table(maps_file, header=0, sep='\t')
+        for n in range(df.shape[0]):
+            head = df['head'].iloc[n]
+            expert = df['expert'].iloc[n]
+            label = df['label'].iloc[n]
+            self.maps[head] = [label, expert]
+            self.expert_to_head[expert] = head
 
         if cfg.backbone == 'mlp':
             backbone_class = MLPBackbone
@@ -274,9 +263,7 @@ if __name__ == "__main__":
     cfg.input_length = 1000
     cfg.hidden_dims = (128, 64)
     cfg.dropout = 0.3
-    cfg.maps_file = 'maps.txt'
     cfg.moe = True
-    cfg.masks_file = 'masks.txt'
     cfg.backbone_class = MLPBackbone
 
     model = HierarchicalHLA(cfg)

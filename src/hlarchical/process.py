@@ -1,13 +1,26 @@
-import os
-import gzip
-import numpy as np
-import pandas as pd
+from .utils import *
 
 class Processor:
-    def __init__(self, ref_phased='1000G_REF_phased.vcf.gz', label_include=['HLA'], feature_exclude=['HLA'], expert_by='ld'):
+    def __init__(self, ref_phased='1000G_REF_phased.vcf.gz', with_ancestry=False, ancestry_file='ancestry.txt', label_include=['HLA'], feature_exclude=['HLA'], expert_by='ld'):
         self.label_include = label_include
         self.feature_exclude = feature_exclude
         self.expert_by = expert_by
+
+        self.with_ancestry = with_ancestry
+        if with_ancestry:
+            self.data_dir = data_dir + '/with_ancestry'
+        else:
+            self.data_dir = data_dir + '/without_ancestry'
+        if with_ancestry:
+            self.ancestry_file = ancestry_file
+            if not os.path.exists(ancestry_file):
+                self.ancestry_file = self.data_dir + '/' + ancestry_file
+                if not os.path.exists(self.ancestry_file):
+                    print(f'ancestry file {ancestry_file} not found')
+                else:
+                    print(f'using ancestry file {self.ancestry_file}')
+            else:
+                print(f'using ancestry file {ancestry_file}')
 
         self.ref_phased = self.read_vcf(ref_phased)
 
@@ -50,25 +63,20 @@ class Processor:
         self.expert_groups['E2'] = ['HLA-DPA1', 'HLA-DPB1']
         self.expert_groups['E3'] = ['HLA-DQA1', 'HLA-DQB1', 'HLA-DRB1']
 
-    def make_features(self, out_file='features.txt', ancestry_file='ancestry.txt'):
+    def make_features(self, out_file='features.txt'):
         df = self.ref_phased_feature.iloc[:, 9:].T
         df.columns = self.ref_phased_feature['ID'] + '_' + self.ref_phased_feature['POS'].astype(str)
         df.reset_index(inplace=True, names=['sample'])
 
-        if os.path.exists(ancestry_file):
-            df_anc = pd.read_table(ancestry_file, header=0, sep='\t', low_memory=False)
+        if self.with_ancestry:
+            df_anc = pd.read_table(self.ancestry_file, header=0, sep='\t', low_memory=False)
             df_anc_encoded = pd.get_dummies(df_anc.iloc[:, 1], prefix='ancestry').astype(int).astype(str)
             df_anc_encoded = df_anc_encoded + '|' + df_anc_encoded
             df_anc_encoded['sample'] = df_anc.iloc[:, 0]
             df_merged = pd.merge(df, df_anc_encoded, on='sample')
             if df_merged['sample'].tolist() != df['sample'].tolist():
                 raise ValueError('Mismatch in sample names between features and ancestry data.')
-            out_file = out_file.split('.txt')[0] + '_with_ancestry.txt'
-            print('Ancestry file found. Ancestry features will be included.')
             df = df_merged
-        else:
-            print(f'Ancestry file {ancestry_file} not found. Proceeding without ancestry features.')
-            out_file = out_file.split('.txt')[0] + '_without_ancestry.txt'
 
         df.to_csv(out_file, sep='\t', index=False, header=True)
         out_file_list = out_file.split('.txt')[0] + '_list.txt'
@@ -216,27 +224,28 @@ class Processor:
                 m = []
                 for n in range(1, features.shape[1]):
                     fields = features.columns[n].split('_')
-                    pos = int(fields[-1])
-                    if pos >= pos_min - flank and pos <= pos_max + flank:
+                    name = '_'.join(fields[0:-1])
+                    if name.find('ancestry') != -1:
                         m.append(1)
                     else:
-                        m.append(0)
+                        pos = int(fields[-1])
+                        if pos >= pos_min - flank and pos <= pos_max + flank:
+                            m.append(1)
+                        else:
+                            m.append(0)
                 L.append([expert] + m)
         df = pd.DataFrame(L)
         df.columns = ['expert'] + features.columns[1:].tolist()
         df.to_csv(out_file, sep='\t', index=False, header=True)
         print(f'processed masks data: {out_file}')
 
-    def get_sample_features(self, sample_vcf, features_file='features_without_ancestry_list.txt', ancestry_file=None, out_file='to_predict_without_ancestry.txt'):
+    def get_sample_features(self, sample_vcf, features_file='features_list.txt', out_file='to_predict.txt'):
         if not os.path.exists(features_file):
-            features_list = data_dir + '/' + features_file
+            features_list = self.data_dir + '/' + features_file
             if os.path.exists(features_list):
                 features_file = features_list
             else:
                 raise FileNotFoundError(f'Features file {features_file} or {features_list} not found.')
-        if features_file.endswith('with_ancestry_list.txt'):
-            if ancestry_file is None not os.path.exists(ancestry_file):
-                raise FileNotFoundError(f'Ancestry file {ancestry_file} not found.')
 
         df = self.read_vcf(sample_vcf)
         samples = df.columns[9:].tolist()
@@ -245,7 +254,8 @@ class Processor:
             raise ValueError(f'Expected features file to have only one column, but found {df_features.shape[1]} columns.')
         features = [x for x in df_features.iloc[:, 0] if not x.startswith('ancestry_')]
         ancestry = [x.split('ancestry_')[-1] for x in df_features.iloc[:, 0] if x.startswith('ancestry_')]
-        print(f'Ancestry features identified: {ancestry}')
+        if len(ancestry):
+            print(f'Ancestry features identified: {ancestry}')
 
         D = {}
         for n in range(df.shape[0]):
@@ -262,8 +272,8 @@ class Processor:
         df.columns = features
         df.reset_index(inplace=True, names=['sample'])
 
-        if features_file.endswith('with_ancestry_list.txt'):
-            df_anc = pd.read_table(ancestry_file, header=0, sep='\t', low_memory=False)
+        if self.with_ancestry:
+            df_anc = pd.read_table(self.ancestry_file, header=0, sep='\t', low_memory=False)
             # ancestry encoding must match the one used in the training data
             if not set(df_anc.iloc[:, 1]).issubset(set(ancestry)):
                 raise ValueError('Ancestry categories in the ancestry file do not match those in the features list.')
@@ -273,7 +283,6 @@ class Processor:
             df_merged = pd.merge(df, df_anc_encoded, on='sample')
             if df_merged['sample'].tolist() != df['sample'].tolist():
                 raise ValueError('Mismatch in sample names between features and ancestry data.')
-            print('Ancestry file found. Ancestry features will be included.')
             df = df_merged
         else:
             print(f'Proceeding without ancestry features.')

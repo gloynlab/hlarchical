@@ -1,7 +1,4 @@
-import os
-import pandas as pd
-import subprocess
-import gzip
+from .utils import *
 
 class Preprocessor:
     def __init__(self):

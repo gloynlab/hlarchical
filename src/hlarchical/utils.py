@@ -1,6 +1,11 @@
 import os
 import numpy as np
 import pandas as pd
+import gzip
+import subprocess
+import yaml
+import shutil
+import glob
 import torch
 torch.manual_seed(42)
 import matplotlib
@@ -17,21 +22,22 @@ config_dir = f'{resources.files("hlarchical")}/config'
 data_dir = f'{resources.files("hlarchical")}/data'
 
 class CustomLoss(torch.nn.Module):
-    def __init__(self, cfg=None):
+    def __init__(self, cfg=None, maps_file='maps.txt'):
         super().__init__()
         self.loss_fn = torch.nn.CrossEntropyLoss()
         self.ground_truth_gated_loss = False
         self.gated_loss_lambda = 1.0
         self.maps = {}
         if cfg:
-            if hasattr(cfg, 'maps_file') and os.path.exists(cfg.maps_file):
-                df = pd.read_table(cfg.maps_file, header=0, sep='\t')
-                for n in range(df.shape[0]):
-                    head = df['head'].iloc[n]
-                    head_idx = df['head_idx'].iloc[n]
-                    parent = df['parent'].iloc[n]
-                    parent_val = df['parent_val'].iloc[n]
-                    self.maps[head] = [head_idx, parent, parent_val]
+            if not os.path.exists(maps_file):
+                raise FileNotFoundError(f'{maps_file} not found')
+            df = pd.read_table(maps_file, header=0, sep='\t')
+            for n in range(df.shape[0]):
+                head = df['head'].iloc[n]
+                head_idx = df['head_idx'].iloc[n]
+                parent = df['parent'].iloc[n]
+                parent_val = df['parent_val'].iloc[n]
+                self.maps[head] = [head_idx, parent, parent_val]
 
             if hasattr(cfg, 'ground_truth_gated_loss') and cfg.ground_truth_gated_loss:
                 self.ground_truth_gated_loss = True

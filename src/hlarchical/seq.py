@@ -1,4 +1,4 @@
-import os
+from .utils import *
 
 class Seq:
     def __init__(self):

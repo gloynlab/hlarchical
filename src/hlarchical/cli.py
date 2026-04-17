@@ -18,7 +18,9 @@ def get_parser():
 
     p2 = subparsers.add_parser("get-sample-features", help="get the features of the sample data for prediction")
     p2.add_argument('--vcf', type=str, default='input_phased.vcf.gz', help='the phased sample data')
-    p2.add_argument('--features', type=str, default='features_without_ancestry_list.txt', help='the list of features used in the model training, generated using the make_features function')
+    p2.add_argument('--features', type=str, default='features_list.txt', help='the list of features used in the model training, generated using the make_features function')
+    p2.add_argument('--with_ancestry', type=str, default='False', help='using ancestry as features to do the prediction')
+    p2.add_argument('--ancestry_file', type=str, default=None, help='ancestry file with samples in the first column and ancestry info in the second column')
     p2.add_argument('--output', type=str, default='to_predict.txt', help='the output file for the features of the sample data, in the same format as the feature file used in the model training')
 
     p3 = subparsers.add_parser("predict", help="predict HLA alleles using the trained model")
@@ -28,6 +30,8 @@ def get_parser():
     p3.add_argument('--epoch', type=int, default=200, help='the epoch of the trained model to be used for prediction')
     p3.add_argument('--config_file', type=str, default='config.yaml', help='the config file used in the model training')
     p3.add_argument('--maps_file', type=str, default='maps.txt', help='the maps file used in the model training, generated using the make_maps function')
+    p3.add_argument('--masks_file', type=str, default='masks.txt', help='the masks file used in the model training, generated using the make_masks function')
+    p3.add_argument('--with_ancestry', type=str, default='False', help='using ancestry as features to do the prediction')
 
     p4 = subparsers.add_parser("get-hlarchical-table", help="get the table in the format defined by hlarchical")
     p4.add_argument('--input', type=str, default='data/1958BC_Euro.bgl.phased', help='input file')
@@ -64,24 +68,15 @@ def main():
         hla = Preprocessor()
         sample_vcf = args.vcf
         ref_vcf = args.ref
-        if not os.path.exists(ref_vcf):
-            ref_vcf = data_dir + '/' + ref_vcf
-        if not os.path.exists(ref_vcf):
-            raise FileNotFoundError(f"Reference VCF file {ref_vcf} not found.")
-        else:
-            print(f'using reference VCF file: {ref_vcf}')
         genome_build = args.genome_build
         hla.phase_sample_on_reference(sample_vcf=sample_vcf, ref_vcf=ref_vcf, genome_build=genome_build)
     elif args.command == 'get-sample-features':
-        hla = Processor()
         sample_vcf = args.vcf
         features_file = args.features
-        if not os.path.exists(features_file):
-            features_file = data_dir + '/' + features_file
-        if not os.path.exists(features_file):
-            raise FileNotFoundError(f"Features file {features_file} not found.")
-        else:
-            print(f'using features file: {features_file}')
+        ancestry_file = args.ancestry_file
+        with_ancestry = True if args.with_ancestry.lower() in ['true', 'yes'] else False
+        ancestry_file = args.ancestry_file
+        hla = Processor(with_ancestry=with_ancestry, ancestry_file=ancestry_file)
         out_file = args.output
         hla.get_sample_features(sample_vcf=sample_vcf, features_file=features_file, out_file=out_file)
     elif args.command == 'predict':
@@ -91,14 +86,10 @@ def main():
         config_file = args.config_file
         epoch = args.epoch
         maps_file = args.maps_file
-        if not os.path.exists(maps_file):
-            maps_file = data_dir + '/' + maps_file
-        if not os.path.exists(maps_file):
-            raise FileNotFoundError(f"Maps file {maps_file} not found.")
-        else:
-            print(f'using maps file: {maps_file}')
-        hla = Trainer(config_file=config_file, model_name=model_name)
-        hla.predict(pred_file=in_file, out_file=out_file, epoch=epoch, maps_file=maps_file)
+        masks_file = args.masks_file
+        with_ancestry = True if args.with_ancestry.lower() in ['true', 'yes'] else False
+        hla = Trainer(config_file=config_file, model_name=model_name, maps_file=maps_file, masks_file=masks_file, with_ancestry=with_ancestry)
+        hla.predict(pred_file=in_file, out_file=out_file, epoch=epoch)
 
     elif args.command == 'get-hlarchical-table':
         hla = Array()

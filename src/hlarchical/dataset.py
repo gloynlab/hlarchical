@@ -1,12 +1,8 @@
-import os
-import sys
-import numpy as np
-import pandas as pd
-import yaml
 import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import KFold
+from .utils import *
 
 class CustomDataset(Dataset):
     def __init__(self, features_file='features.txt', labels_file='labels.txt', maps_file='maps.txt', out_file='hla'):

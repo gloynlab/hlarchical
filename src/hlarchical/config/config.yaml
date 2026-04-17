@@ -9,8 +9,6 @@ models:
       learning_rate: 5e-4
       weight_decay: 0.01
       early_stopping: false
-      maps_file: 'maps.txt'
-      masks_file: 'masks.txt'
       moe: true
       ground_truth_gated_loss: false
       gated_loss_lambda: 0.5
@@ -28,8 +26,6 @@ models:
       learning_rate: 1e-4
       weight_decay: 0.01
       early_stopping: false
-      maps_file: 'maps.txt'
-      masks_file: 'masks.txt'
       moe: true
       ground_truth_gated_loss: false
       gated_loss_lambda: 0.5
@@ -47,8 +43,6 @@ models:
       learning_rate: 1e-4
       weight_decay: 0.01
       early_stopping: false
-      maps_file: 'maps.txt'
-      masks_file: 'masks.txt'
       moe: true
       ground_truth_gated_loss: false
       gated_loss_lambda: 0.5
@@ -64,8 +58,6 @@ models:
       learning_rate: 1e-4
       weight_decay:  0.01
       early_stopping: false
-      maps_file: 'maps.txt'
-      masks_file: 'masks.txt'
       moe: false
       ground_truth_gated_loss: false
       gated_loss_lambda: 0.5

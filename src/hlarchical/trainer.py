@@ -4,9 +4,32 @@ from .utils import *
 
 class Trainer:
     def __init__(self, config_file='config.yaml', model_name='mlp', train_file=None, val_file=None, test_file=None,
+                 with_ancestry=False, maps_file='maps.txt', masks_file='masks.txt',
                  metrics_file=None, lr_lambda=None, print_every_n_batches=100):
         self.config = self.load_yaml(config_file)
         self.HLA = ['HLA-A', 'HLA-B', 'HLA-C', 'HLA-DPA1', 'HLA-DPB1', 'HLA-DQA1', 'HLA-DQB1', 'HLA-DRB1']
+        if with_ancestry:
+            self.data_dir = data_dir + '/with_ancestry'
+        else:
+            self.data_dir = data_dir + '/without_ancestry'
+
+        self.maps_file = maps_file
+        if not os.path.exists(maps_file):
+            self.maps_file = self.data_dir + '/' + maps_file
+            if not os.path.exists(self.maps_file):
+                raise FileNotFoundError(f'maps file {maps_file} or {self.maps_file} not found!')
+        else:
+            print(f'using maps file {maps_file}')
+
+        self.masks_file = masks_file
+        if masks_file is None:
+            print('proceeding without using masks')
+        elif not os.path.exists(masks_file):
+            self.masks_file = self.data_dir + '/' + masks_file
+            if not os.path.exists(self.masks_file):
+                raise FileNotFoundError(f'masks file {masks_file} or {self.masks_file} not found!')
+        else:
+            print(f'using masks file {masks_file}')
 
         self.train_dataset, self.val_dataset, self.test_dataset = None, None, None
         if train_file and os.path.exists(train_file):
@@ -23,11 +46,10 @@ class Trainer:
         model_class = eval(self.config['models'][model_name]['class'])
         cfg = Config(self.config['models'][model_name]['params'])
         cfg.device = self.device
-        self.model = model_class(cfg).to(self.device)
+        self.model = model_class(cfg, maps_file=self.maps_file, masks_file=self.masks_file).to(self.device)
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=cfg.learning_rate, weight_decay=cfg.weight_decay)
-        self.loss_fn = CustomLoss(cfg=cfg)
+        self.loss_fn = CustomLoss(cfg=cfg, maps_file=self.maps_file)
         self.print_every_n_batches = print_every_n_batches
-
 
         self.metrics_file = metrics_file
         if not self.metrics_file:
@@ -104,7 +126,7 @@ class Trainer:
         loss_list.append(loss_avg)
         print(f'{ds} epoch:{epoch} avg loss: {loss_list[-1]}')
 
-    def eval(self, epoch, maps_file='maps.txt', test=False):
+    def eval(self, epoch, test=False):
         dataset = self.val_dataset
         accuracy = self.val_accuracy
         if test:
@@ -113,7 +135,7 @@ class Trainer:
 
         self.load_checkpoint(epoch)
 
-        df = pd.read_table(maps_file, header=0, sep='\t')
+        df = pd.read_table(self.maps_file, header=0, sep='\t')
         digits = {}
         heads = {}
         for n in range(df.shape[0]):
@@ -160,17 +182,11 @@ class Trainer:
         print(f'accuracy per digit: {acc}')
         self.log_metrics()
 
-    def test(self, epoch, maps_file='maps.txt'):
-        self.eval(epoch, maps_file=maps_file, test=True)
+    def test(self, epoch):
+        self.eval(epoch, test=True)
 
-    def predict(self, epoch=None, pred_file='to_predict.txt', out_file='predicted.txt', maps_file='maps.txt', split_by_digit=True):
-        maps = maps_file
-        if not os.path.exists(maps_file):
-            maps = data_dir + '/' + maps_file
-            if not os.path.exists(maps):
-                raise FileNotFoundError(f'maps file {maps_file} or {maps} not found!')
-
-        df = pd.read_table(maps, header=0, sep='\t')
+    def predict(self, epoch=None, pred_file='to_predict.txt', out_file='predicted.txt', split_by_digit=True):
+        df = pd.read_table(self.maps_file, header=0, sep='\t')
         maps = {}
         for n in range(df.shape[0]):
             head = df['head'].iloc[n]
@@ -319,7 +335,7 @@ class Trainer:
         ckpt_file = f'{self.model_name}_ckpt_{epoch}.pt'
         in_file = ckpt_file
         if not os.path.exists(ckpt_file):
-            in_file = data_dir + '/' + ckpt_file
+            in_file = self.data_dir + '/' + ckpt_file
             if not os.path.exists(in_file):
                 raise FileNotFoundError(f'checkpoint file {ckpt_file} or {in_file} not found!')
         print(f'loading checkpoint from {in_file}')
