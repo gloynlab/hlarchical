@@ -324,7 +324,7 @@ class Array():
             df.to_csv(out_file, header=True, index=False, sep='\t')
 
     def merge_hlarchical_tables(self, ancestry_file='GAP_OMNI_GDA.txt', out_file='HLA_OMNI_GDA.txt', digits=[2, 4],
-                      tools=['SNP2HLA', 'HIBAG', 'hlarchicalMLP', 'hlarchicalCNN'], Ancestry=['European', 'Asian', 'African', 'Hispanic', 'MA'], Array=['GDA', 'OMNI']):
+                      tools=['SNP2HLA', 'HIBAG', 'hlarchicalMLPwithoutAncestry', 'hlarchicalMLPwithAncestry'], Ancestry=['European', 'Asian', 'African', 'Hispanic', 'MA'], Array=['GDA', 'OMNI']):
         D = {}
         A = {}
         for digit in digits:
@@ -460,7 +460,7 @@ class Array():
         df_ancestry.columns = ['HLA', 'ancestry', 'method', 'score', 'genotyping', 'typing']
         df_ancestry.to_csv(out_file_ancestry, sep='\t', index=False, header=True)
 
-    def bar_plot_score(self, in_file, digits=[2, 4], methods=['SNP2HLA', 'HIBAG', 'hlarchicalMLP', 'hlarchicalCNN'], cmap='colorblind'):
+    def bar_plot_score(self, in_file, digits=[2, 4], methods=['SNP2HLA', 'HIBAG', 'hlarchicalMLPwithAncestry', 'hlarchicalMLPwithoutAncestry'], cmap='colorblind'):
         df = pd.read_table(in_file, header=0, sep='\t')
         for digit in digits:
             for method in methods:
