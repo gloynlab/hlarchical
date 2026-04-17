@@ -18,11 +18,11 @@ def get_parser():
 
     p2 = subparsers.add_parser("get-sample-features", help="get the features of the sample data for prediction")
     p2.add_argument('--vcf', type=str, default='input_phased.vcf.gz', help='the phased sample data')
-    p2.add_argument('--features', type=str, default='features_list.txt', help='the list of features used in the model training, generated using the make_features function')
+    p2.add_argument('--features', type=str, default='features_without_ancestry_list.txt', help='the list of features used in the model training, generated using the make_features function')
     p2.add_argument('--output', type=str, default='to_predict.txt', help='the output file for the features of the sample data, in the same format as the feature file used in the model training')
 
     p3 = subparsers.add_parser("predict", help="predict HLA alleles using the trained model")
-    p3.add_argument('--input', type=str, default='to_predict.txt', help='the input file for prediction, generated using the get-sample-features command')
+    p3.add_argument('--input', type=str, default='to_predict_without_ancestry.txt', help='the input file for prediction, generated using the get-sample-features command')
     p3.add_argument('--output', type=str, default='predicted.txt', help='the output file for the predicted HLA alleles')
     p3.add_argument('--model_name', type=str, default='mlp', help='the name of the model to be used for prediction')
     p3.add_argument('--epoch', type=int, default=200, help='the epoch of the trained model to be used for prediction')
