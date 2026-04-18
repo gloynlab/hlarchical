@@ -215,3 +215,6 @@ __marimo__/
 *.conda/
 *.rustup/
 HLA-HD/
+DEEP-HLA/
+SNP2HLA/
+
