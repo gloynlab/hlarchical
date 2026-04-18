@@ -41,7 +41,7 @@ class Array():
         print(cmd)
         subprocess.run(cmd, shell=True, check=True)
 
-    def run_deephla(self, mode='train', in_file='1958BC_Pan-Asian_REF', ref_file='Pan-Asian_REF', subset=[], model_json=None, model_dir='model', deephla_dir=None):
+    def run_deephla(self, mode='train', in_file='OMNI_Pan-Asian_REF', ref_file='Pan-Asian_REF', model_json='Pan-Asian_REF.model.json', hla_json='Pan-Asian_REF.hla.json', model_dir='model_Pan-Asian_REF', deephla_dir=None, out_file='OMNI_Pan-Asian', subset=[]):
         if not deephla_dir:
             deephla_dir = f'{resources.files("hlarchical").parent.parent}/vendor/DEEP-HLA'
 
@@ -64,16 +64,16 @@ class Array():
                 df = df.loc[wh, ] 
                 df.to_csv(f'{in_file}.bgl.phased', header=False, index=False, sep=' ')
 
-            hla_json = f'{ref_file}.hla.json'
+            if not os.path.exists(model_json): 
+                raise FileNotFoundError(f'{model_json} not found')
+
             if not os.path.exists(hla_json):
                 print('Generating HLA info JSON file...')
-                cmd = f'conda run -n DEEP-HLA python {deephla_dir}/make_hlainfo.py --ref {ref_file} --out {ref_file}.hla.json'
+                cmd = f'conda run -n DEEP-HLA python {deephla_dir}/make_hlainfo.py --ref {ref_file} --out {hla_json}'
                 print(cmd)
                 subprocess.run(cmd, shell=True, check=True)
 
-            if not model_json:
-                model_json = f'{ref_file}.model.json'
-            if os.path.exists(model_json):
+            if os.path.exists(model_json) and os.path.exists(hla_json):
                 model_json = model_json.split('.model.json')[0]
                 hla_json = hla_json.split('.hla.json')[0]
                 cmd = f'conda run -n DEEP-HLA python {deephla_dir}/train.py --ref {ref_file} --sample {in_file} --model {model_json} --hla {hla_json} --model-dir {model_dir}'
@@ -84,7 +84,7 @@ class Array():
 
         elif mode == 'impute':
             model_json = model_json.split('.model.json')[0]
-            hla_json = ref_file
-            cmd = f'conda run -n DEEP-HLA python {deephla_dir}/impute.py --sample {in_file} --model {model_json} --hla  {hla_json} --model-dir {model_dir} --out {in_file}'
+            hla_json = hla_json.split('.hla.json')[0]
+            cmd = f'conda run -n DEEP-HLA python {deephla_dir}/impute.py --sample {in_file} --model {model_json} --hla  {hla_json} --model-dir {model_dir} --out {out_file}'
             print(cmd)
             subprocess.run(cmd, shell=True, check=True)

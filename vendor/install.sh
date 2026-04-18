@@ -57,7 +57,7 @@ dependencies:
   - tqdm=4.67.1
   - pip
   - pip:
-      - torch==1.4.0
+  - torch==1.4.0
 EOF
 
 conda env create -f environment.yml

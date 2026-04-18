@@ -303,14 +303,14 @@ class Summary():
                         if sample_id == sample_ids[0] and hla == self.HLA[0]:
                             cols += [f'Allele1_{tool}_digit{digit}', f'Allele2_{tool}_digit{digit}']
     
-                        if tool == 'SNP2HLA':
+                        if tool in ['SNP2HLA', 'DEEP-HLA']:
                             if superpopulation in ['EUR']:
                                 ancestry = 'European'
                             elif superpopulation in ['EAS', 'SAS']:
                                 ancestry = 'Asian'
                             else:
                                 ancestry = 'European'
-                        elif tool == 'HIBAG':
+                        elif tool in ['HIBAG']:
                             if superpopulation in ['EUR']:
                                 ancestry = 'European'
                             elif superpopulation in ['EAS', 'SAS']:
