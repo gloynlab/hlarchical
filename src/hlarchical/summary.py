@@ -17,7 +17,7 @@ class Summary():
                 skiprows = 0
                 col = 0
                 in_header = None
-                samples = pd.read_table(in_file.replace('.deephla.phased', '.fam'), sep=' ', header=None).iloc[:, 1].tolist()
+                samples = pd.read_table(in_file.replace('.deephla.phased', '_SNP2HLA.fam'), sep=' ', header=None).iloc[:, 1].tolist()
 
             df = pd.read_table(in_file, sep=sep, skiprows=skiprows, header=in_header)
             df = df.loc[df.iloc[:, col].str.startswith('HLA'), ]
@@ -237,6 +237,8 @@ class Summary():
             df = pd.DataFrame(L)
             df.columns = header
             df.to_csv(out_file, header=True, index=False, sep='\t')
+        else:
+            raise ValueError(f'Unsupported tool: {from_tool}. Supported tools are: snp2hla, deep-hla, hibag, hla-hd, xhla, opti-type, hla-typing.')
 
     def merge_hlarchical_tables(self, out_file='HLA_OMNI_GDA_GAP.txt', digits=[2, 4], tools=['SNP2HLA', 'HIBAG', 'hlarchicalMLPwithoutAncestry', 'hlarchicalMLPwithAncestry'],
                                 Ancestry=['European', 'Asian', 'African', 'Hispanic', 'MA'], Array=['GDA', 'OMNI'], ancestry_file='GAP_OMNI_GDA.txt'):
@@ -303,7 +305,7 @@ class Summary():
                         if sample_id == sample_ids[0] and hla == self.HLA[0]:
                             cols += [f'Allele1_{tool}_digit{digit}', f'Allele2_{tool}_digit{digit}']
     
-                        if tool in ['SNP2HLA', 'DEEP-HLA']:
+                        if tool in ['SNP2HLA', 'DEEPHLA']:
                             if superpopulation in ['EUR']:
                                 ancestry = 'European'
                             elif superpopulation in ['EAS', 'SAS']:
@@ -323,6 +325,8 @@ class Summary():
                                 ancestry = 'European'
                         elif tool.find('hlarchical') != -1:
                             ancestry = 'MA'
+                        else:
+                            raise ValueError(f'Unsupported tool: {tool}.')
 
                         k = (sample_name, hla)
                         allele1, allele2 = ['.', '.']

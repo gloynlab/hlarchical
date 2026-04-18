@@ -71,14 +71,14 @@ class Array():
                 print('Generating HLA info JSON file...')
                 cmd = f'conda run -n DEEP-HLA python {deephla_dir}/make_hlainfo.py --ref {ref_file} --out {hla_json}'
                 print(cmd)
-                subprocess.run(cmd, shell=True, check=True)
+                subprocess.run(cmd, shell=True)
 
             if os.path.exists(model_json) and os.path.exists(hla_json):
                 model_json = model_json.split('.model.json')[0]
                 hla_json = hla_json.split('.hla.json')[0]
                 cmd = f'conda run -n DEEP-HLA python {deephla_dir}/train.py --ref {ref_file} --sample {in_file} --model {model_json} --hla {hla_json} --model-dir {model_dir}'
                 print(cmd)
-                subprocess.run(cmd, shell=True, check=True)
+                subprocess.run(cmd, shell=True)
             else:
                 raise FileNotFoundError(f'{model_json} not found')
 
@@ -87,4 +87,4 @@ class Array():
             hla_json = hla_json.split('.hla.json')[0]
             cmd = f'conda run -n DEEP-HLA python {deephla_dir}/impute.py --sample {in_file} --model {model_json} --hla  {hla_json} --model-dir {model_dir} --out {out_file}'
             print(cmd)
-            subprocess.run(cmd, shell=True, check=True)
+            subprocess.run(cmd, shell=True)

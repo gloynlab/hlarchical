@@ -4,6 +4,7 @@ from .process import Processor
 from .dataset import CustomDataset
 from .trainer import Trainer
 from .array import Array
+from .summary import Summary
 from .utils import *
 
 def get_parser():
@@ -92,10 +93,6 @@ def main():
         with_ancestry = True if args.with_ancestry.lower() in ['true', 'yes'] else False
         hla = Trainer(config_file=config_file, model_name=model_name, maps_file=maps_file, masks_file=masks_file, with_ancestry=with_ancestry)
         hla.predict(pred_file=in_file, out_file=out_file, epoch=epoch)
-
-    elif args.command == 'get-hlarchical-table':
-        hla = Array()
-        hla.get_hlarchical_table(in_file=args.input, out_file=args.output, digit=args.digit, from_tool=args.from_tool)
     elif args.command == 'run-snp2hla':
         hla = Array()
         hla.run_snp2hla(in_file=args.input, ref_file=args.ref, out_file=args.output)
@@ -106,6 +103,9 @@ def main():
         hla = Array()
         hla.run_deephla(mode=args.mode, in_file=args.input, out_file=args.output, ref_file=args.ref,
                         hla_json=args.hla_json, model_json=args.model_json, model_dir=args.model_dir, subset=args.subset)
+    elif args.command == 'get-hlarchical-table':
+        hla = Summary()
+        hla.get_hlarchical_table(in_file=args.input, out_file=args.output, digit=args.digit, from_tool=args.from_tool)
 
 if __name__ == '__main__':
     main()
