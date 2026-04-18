@@ -22,6 +22,13 @@ class Processor:
             else:
                 print(f'using ancestry file {ancestry_file}')
 
+        if not os.path.exists(ref_phased):
+            ref_phased = data_dir + '/' + ref_phased
+            if not os.path.exists(ref_phased):
+                raise FileNotFoundError(f'reference phased VCF file {ref_phased} not found current directory or {data_dir}')
+            else:
+                print(f'using reference phased VCF file {ref_phased}')
+
         self.ref_phased = self.read_vcf(ref_phased)
 
         # Extract HLA for targets

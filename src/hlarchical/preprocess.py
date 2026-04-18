@@ -149,20 +149,25 @@ class Preprocessor:
         os.remove(f'{concated_file}.csi')
 
     def phase_sample_on_reference(self, sample_vcf='GDA.vcf.gz', ref_vcf='1000G_REF_phased.vcf.gz', genome_build='GRCh37', subset_variants=True, fix_ref=True, flank=1e6):
+        out_file = sample_vcf.split('.vcf')[0] + '_phased_on_' + ref_vcf
         if not os.path.exists(sample_vcf):
             raise FileNotFoundError(f'Error: Sample VCF {sample_vcf} not found')
         elif not os.path.exists(sample_vcf + '.tbi') and not os.path.exists(sample_vcf + '.csi'):
             raise FileNotFoundError(f'Error: Sample VCF index {sample_vcf}.tbi or {sample_vcf}.csi not found')
-        if not os.path.exists(ref_vcf):
-            raise FileNotFoundError(f'Error: Reference VCF {ref_vcf} not found')
 
-        out_file = sample_vcf.split('.vcf')[0] + '_phased_on_' + ref_vcf
+        if not os.path.exists(ref_vcf):
+            ref_vcf = data_dir + '/' + ref_vcf
+            if not os.path.exists(ref_vcf):
+                raise FileNotFoundError(f'Error: Reference VCF {ref_vcf} not found')
+            else:
+                print(f'using reference: {ref_vcf}')
+
         if subset_variants:
             print('subsetting sample variants to HLA region...')
             self.subset_variants_vcf(sample_vcf, genome_build=genome_build, flank=flank)
             sample_vcf = sample_vcf.split('.vcf')[0] + '_variantSubset.vcf.gz'
         if fix_ref:
-            print('refix on sample VCF...')
+            print('performing fixref on sample VCF...')
             self.fixref_vcf(sample_vcf, genome_build=genome_build)
             sample_vcf = sample_vcf.split('.vcf')[0] + '_fixref.vcf.gz'
         cmd = f'beagle gt={sample_vcf} ref={ref_vcf} out={out_file.split(".vcf")[0]}'
