@@ -238,10 +238,16 @@ class Summary():
             df.columns = header
             df.to_csv(out_file, header=True, index=False, sep='\t')
 
-    def merge_hlarchical_tables(self, ancestry_file='GAP_OMNI_GDA.txt', out_file='HLA_OMNI_GDA.txt', digits=[2, 4],
-                      tools=['SNP2HLA', 'HIBAG', 'hlarchicalMLPwithoutAncestry', 'hlarchicalMLPwithAncestry'], Ancestry=['European', 'Asian', 'African', 'Hispanic', 'MA'], Array=['GDA', 'OMNI']):
+    def merge_hlarchical_tables(self, out_file='HLA_OMNI_GDA_GAP.txt', digits=[2, 4], tools=['SNP2HLA', 'HIBAG', 'hlarchicalMLPwithoutAncestry', 'hlarchicalMLPwithAncestry'],
+                                Ancestry=['European', 'Asian', 'African', 'Hispanic', 'MA'], Array=['GDA', 'OMNI'], ancestry_file='GAP_OMNI_GDA.txt'):
         D = {}
-        A = {}
+        SA = {}
+        SA['SampleID'] = {}
+        SA['SampleName'] = {}
+        SA['Superpopulation'] = {}
+        SA['Population'] = {}
+        SA['Array'] = {}
+
         for digit in digits:
             D.setdefault(digit, {})
             for tool in tools:
@@ -265,47 +271,59 @@ class Summary():
                                     sample_id = '-'.join(sample_id.split('-')[1:])
                                 elif sample_id_with_fid_underscore:
                                     sample_id = '_'.join(sample_id.split('_')[1:])
-                                A[sample_id] = array
+                                SA['SampleID'][sample_id] = sample_id
+                                SA['Array'][sample_id] = array
                                 hla = row['HLA']
                                 allele1 = row['Allele1']
                                 allele2 = row['Allele2']
                                 k = (sample_id, hla)
                                 D[digit][tool][ancestry][k] = (allele1, allele2)
     
-        df = pd.read_table(ancestry_file, header=0, sep='\t')
         Ls = []
-        cols = ['SampleID', 'Superpopulation', 'Population', 'Array', 'HLA']
+        if ancestry_file is not None and os.path.exists(ancestry_file):
+            df = pd.read_table(ancestry_file, header=0, sep='\t')
+            SA['SampleName'] = dict(zip(df['SampleID'], df['SampleName']))
+            SA['Superpopulation'] = dict(zip(df['SampleID'], df['Superpopulation']))
+            SA['Population'] = dict(zip(df['SampleID'], df['Population']))
+        else:
+            print('Ancestry not used', flush=True)
 
-        for n in range(df.shape[0]):
-            sample_id = df['SampleID'].iloc[n]
-            sample_name = df['SampleName'].iloc[n]
-            superpopulation = df['Superpopulation'].iloc[n]
-            population = df['Population'].iloc[n]
-            array = A.get(sample_name, '.')
-            if superpopulation in ['EAS', 'SAS']:
-                ancestry = 'Asian'
-            elif superpopulation in ['EUR']:
-                ancestry = 'European'
-            elif superpopulation in ['AFR']:
-                ancestry = 'African'
-            elif superpopulation in ['AMR']:
-                ancestry = 'Hispanic'
-            else:
-                ancestry = 'European'
-    
+        cols = ['SampleID', 'Superpopulation', 'Population', 'Array', 'HLA']
+        sample_ids = sorted(SA['SampleID'])
+        for sample_id in sample_ids:
+            sample_name = SA['SampleName'].get(sample_id, sample_id)
+            superpopulation = SA['Superpopulation'].get(sample_id, '.')
+            population = SA['Population'].get(sample_id, '.')
+            array = SA['Array'].get(sample_id, '.')
+
             for hla in self.HLA:
                 L = [sample_id, superpopulation, population, array, hla]
                 for digit in digits:
                     for tool in tools:
-                        if n == 0 and hla == self.HLA[0]:
+                        if sample_id == sample_ids[0] and hla == self.HLA[0]:
                             cols += [f'Allele1_{tool}_digit{digit}', f'Allele2_{tool}_digit{digit}']
     
                         if tool == 'SNP2HLA':
-                            if ancestry not in ['Asian', 'European']:
+                            if superpopulation in ['EUR']:
                                 ancestry = 'European'
-                        if tool.find('hlarchical') != -1:
+                            elif superpopulation in ['EAS', 'SAS']:
+                                ancestry = 'Asian'
+                            else:
+                                ancestry = 'European'
+                        elif tool == 'HIBAG':
+                            if superpopulation in ['EUR']:
+                                ancestry = 'European'
+                            elif superpopulation in ['EAS', 'SAS']:
+                                ancestry = 'Asian'
+                            elif superpopulation in ['AFR']:
+                                ancestry = 'African'
+                            elif superpopulation in ['AMR']:
+                                ancestry = 'Hispanic'
+                            else:
+                                ancestry = 'European'
+                        elif tool.find('hlarchical') != -1:
                             ancestry = 'MA'
-    
+
                         k = (sample_name, hla)
                         allele1, allele2 = ['.', '.']
                         if ancestry in D[digit][tool]:
