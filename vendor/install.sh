@@ -59,9 +59,40 @@ dependencies:
   - pip:
   - torch==1.4.0
 EOF
-
 conda env create -f environment.yml
+fi
 
+## HLARIMNT
+
+cd $vendor_dir
+
+if [ ! -d HLARIMNT ]; then
+
+git clone https://github.com/seitalab/HLARIMNT.git
+cd HLARIMNT
+rm -rf .git
+
+cat <<EOF > environment.yml
+name: HLARIMNT
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - setuptools=75.1.0
+  - numpy=1.24.4
+  - pandas=2.0.3
+  - scikit-learn=1.3.2
+  - tqdm=4.67.1
+  - pip
+  - pip:
+  - torch
+  - PyYAML==6.0.3
+EOF
+conda env create -f environment.yml
+# recoved make_hlainfo.py and make_samplebim.py from the git history
+# reorganized the code structure manually
 fi
 
 ## xHLA
