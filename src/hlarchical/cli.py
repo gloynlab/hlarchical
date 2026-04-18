@@ -13,7 +13,7 @@ def get_parser():
 
     p1 = subparsers.add_parser("phase-sample-on-ref", help="phase the sample data on the reference panel")
     p1.add_argument('--vcf', type=str, default='input.vcf.gz', help='input vcf file of the sample data to be predicted')
-    p1.add_argument('--ref', type=str, default='1000G_REF_phased.vcf.gz', help='the phased reference panel, generated using the make_reference function')
+    p1.add_argument('--ref', type=str, default='1000G_REF_phased.vcf.gz', help='the phased reference panel, generated using the make_reference function, the default one is on GRCh37')
     p1.add_argument('--genome_build', type=str, default='GRCh37', help='the genome build of the sample array data, must be the same as the reference panel')
 
     p2 = subparsers.add_parser("get-sample-features", help="get the features of the sample data for prediction")
