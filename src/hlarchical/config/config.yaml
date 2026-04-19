@@ -12,6 +12,110 @@ models:
       moe: true
       ground_truth_gated_loss: false
       gated_loss_lambda: 0.5
+  mlp-11:
+    class: HierarchicalHLA
+    params:
+      backbone: mlp
+      input_channels: 2
+      hidden_dims: [128, 64, 32]
+      dropout: 0.3
+      learning_rate: 1e-4
+      weight_decay: 0.01
+      early_stopping: false
+      moe: true
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
+  mlp-12:
+    class: HierarchicalHLA
+    params:
+      backbone: mlp
+      input_channels: 2
+      hidden_dims: [128, 64, 32]
+      dropout: 0.2
+      learning_rate: 1e-4
+      weight_decay: 0.01
+      early_stopping: false
+      moe: true
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
+  mlp-13:
+    class: HierarchicalHLA
+    params:
+      backbone: mlp
+      input_channels: 2
+      hidden_dims: [128, 64, 32]
+      dropout: 0.2
+      learning_rate: 1e-4
+      weight_decay: 0.01
+      early_stopping: false
+      moe: false
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
+  mlp-2:
+    class: HierarchicalHLA
+    params:
+      backbone: mlp
+      input_channels: 2
+      hidden_dims: [64, 32, 16]
+      dropout: 0.3
+      learning_rate: 5e-4
+      weight_decay: 0.01
+      early_stopping: false
+      moe: true
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
+  mlp-3:
+    class: HierarchicalHLA
+    params:
+      backbone: mlp
+      input_channels: 2
+      hidden_dims: [64, 32, 16]
+      dropout: 0
+      learning_rate: 5e-4
+      weight_decay: 0.01
+      early_stopping: false
+      moe: true
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
+  mlp-4:
+    class: HierarchicalHLA
+    params:
+      backbone: mlp
+      input_channels: 2
+      hidden_dims: [128, 64, 32]
+      dropout: 0.5
+      learning_rate: 5e-4
+      weight_decay: 0.01
+      early_stopping: false
+      moe: true
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
+  mlp-5:
+    class: HierarchicalHLA
+    params:
+      backbone: mlp
+      input_channels: 2
+      hidden_dims: [64, 32, 16, 8]
+      dropout: 0.5
+      learning_rate: 5e-4
+      weight_decay: 0.01
+      early_stopping: false
+      moe: true
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
+  mlp-6:
+    class: HierarchicalHLA
+    params:
+      backbone: mlp
+      input_channels: 2
+      hidden_dims: [128, 64, 32, 16]
+      dropout: 0.5
+      learning_rate: 5e-4
+      weight_decay: 0.01
+      early_stopping: false
+      moe: true
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
   cnn:
     class: HierarchicalHLA
     params:
@@ -59,5 +163,20 @@ models:
       weight_decay:  0.01
       early_stopping: false
       moe: false
+      ground_truth_gated_loss: false
+      gated_loss_lambda: 0.5
+  spliceai-2:
+    class: HierarchicalHLA
+    params:
+      backbone: spliceai
+      NWD: '[[32, 11, 1]] * 4'
+      in_channels: 2
+      out_channels: 32
+      n_blocks: 4
+      global_pool: 'avg'  # 'avg' or 'max'
+      learning_rate: 1e-4
+      weight_decay:  0.01
+      early_stopping: false
+      moe: true
       ground_truth_gated_loss: false
       gated_loss_lambda: 0.5

@@ -397,7 +397,7 @@ class Summary():
         df_ancestry.columns = ['HLA', 'ancestry', 'method', 'score', 'genotyping', 'typing']
         df_ancestry.to_csv(out_file_ancestry, sep='\t', index=False, header=True)
 
-    def bar_plot_score(self, in_file, digits=[2, 4], methods=['SNP2HLA', 'HIBAG', 'hlarchicalMLPwithAncestry', 'hlarchicalMLPwithoutAncestry'], cmap='colorblind'):
+    def bar_plot_score(self, in_file, digits=[2, 4], methods=['SNP2HLA', 'HIBAG', 'hlarchicalMLPwithAncestry', 'hlarchicalMLPwithoutAncestry', 'hlarchicalMLPm12'], cmap='colorblind'):
         df = pd.read_table(in_file, header=0, sep='\t')
         for digit in digits:
             for method in methods:
