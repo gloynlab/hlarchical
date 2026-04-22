@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import statsmodels.formula.api as smf
 from statsmodels.stats.multitest import multipletests
+from scipy.stats import chi2
 from forestplot import forestplot
 from .utils import *
 
@@ -65,6 +66,7 @@ class AssociationDiseaseHLA():
         for n in range(idx + 1, df0.shape[1]):
             hla = df0.columns[n]
             out_file = out_dir + '/' + in_file.replace('.txt', f'_{hla}_stats.txt')
+            out_file_covs = out_dir + '/' + in_file.replace('.txt', f'_{hla}_covs.txt')
             df = pd.DataFrame()
             df['HLA'] = df0[hla].astype(int)
             df['Condition'] = [0 if x == 'control' else 1 for x in df0['Condition']]
@@ -75,10 +77,13 @@ class AssociationDiseaseHLA():
 
             model = smf.logit(formula, data=df)
             try:
-                result = model.fit().summary()
+                result = model.fit()
+                summary = result.summary()
+                df_covs = pd.DataFrame(result.cov_params())
                 with open(out_file, 'w') as f:
                     f.write(hla + '\n')
-                    f.write(result.as_text())
+                    f.write(summary.as_text())
+                df_covs.to_csv(out_file_covs, sep='\t')
             except Exception as e:
                 print(e)
 
@@ -101,6 +106,12 @@ class AssociationDiseaseHLA():
         df[column] = df[column].cat.reorder_categories(
                 [reference] + [x for x in df[column].cat.categories if x != reference], ordered=True)
 
+    def llr_test(self, ll_full, ll_reduced, df_full, df_reduced):
+        llr_stat = 2 * (ll_full - ll_reduced)
+        df_diff = df_full - df_reduced
+        p_value = chi2.sf(llr_stat, df_diff)
+        print(f"LLR Statistic: {llr_stat}, p-value: {p_value}")
+        return llr_stat, p_value
 
     def forest_plot(self, in_file, p_threshold = 0.05, top_n=20):
         df = pd.read_table(in_file, header=0, sep='\t')
