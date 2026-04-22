@@ -41,11 +41,15 @@ conda activate hlarchical
 
 hla easy-predict --vcf INPUT_GRCh37.vcf.gz
 
+#-------------------------------
+
 # Predict HLA alleles for a new array dataset using the trained model step by step
 
 hla phase-sample-on-ref --vcf 1000G_array_sanger.vcf.gz
 hla get-sample-features --vcf 1000G_array_sanger_phased_on_1000G_REF_phased.vcf.gz
 hla predict --input to_predict.txt --model_name mlp --epoch 200
+
+#-------------------------------
 
 # Train a model on the 1000 Genomes dataset
 
