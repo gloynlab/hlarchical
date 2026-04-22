@@ -12,6 +12,10 @@ def get_parser():
     parser = argparse.ArgumentParser(formatter_class=formatter_class)
     subparsers = parser.add_subparsers(dest='command', required=True)
 
+    p0 = subparsers.add_parser("easy-predict", help="a one-line command to predict HLA alleles using the trained model with default parameters")
+    p0.add_argument('--vcf', type=str, default='input.vcf.gz', help='input vcf file of the sample data to be predicted, must be on GRCh37 (CHROM has no chr prefix)')
+    p0.add_argument('--output', type=str, default='predicted.txt', help='the output file for the predicted HLA alleles')
+
     p1 = subparsers.add_parser("phase-sample-on-ref", help="phase the sample data on the reference panel")
     p1.add_argument('--vcf', type=str, default='input.vcf.gz', help='input vcf file of the sample data to be predicted')
     p1.add_argument('--ref', type=str, default='1000G_REF_phased.vcf.gz', help='the phased reference panel, generated using the make_reference function, the default one is on GRCh37')
@@ -67,7 +71,31 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.command == 'phase-sample-on-ref':
+    if args.command == 'easy-predict':
+        hla = Preprocessor()
+        sample_vcf = args.vcf
+        ref_vcf = '1000G_REF_phased.vcf.gz'
+        genome_build = 'GRCh37'
+        hla.phase_sample_on_reference(sample_vcf=sample_vcf, ref_vcf=ref_vcf, genome_build=genome_build)
+
+        with_ancestry = False
+        ancestry_file = None
+        features_file = 'features_list.txt'
+        out_file = 'to_predict.txt'
+        hla = Processor(with_ancestry=with_ancestry, ancestry_file=ancestry_file)
+        hla.get_sample_features(sample_vcf=sample_vcf, features_file=features_file, out_file=out_file)
+
+        in_file = 'to_predict.txt'
+        out_file = args.output
+        model_name = 'mlp'
+        config_file = 'config.yaml'
+        epoch = 200
+        maps_file = 'maps.txt'
+        masks_file = 'masks.txt'
+        hla = Trainer(config_file=config_file, model_name=model_name, maps_file=maps_file, masks_file=masks_file, with_ancestry=with_ancestry)
+        hla.predict(pred_file=in_file, out_file=out_file, epoch=epoch)
+
+    elif args.command == 'phase-sample-on-ref':
         hla = Preprocessor()
         sample_vcf = args.vcf
         ref_vcf = args.ref

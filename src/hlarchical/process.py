@@ -313,7 +313,7 @@ class Processor:
         else:
             raise ValueError('Input file must VCF format end with .vcf or .vcf.gz')
 
-        df = pd.read_table(in_file, sep='\t', skiprows=n_header)
+        df = pd.read_table(in_file, sep='\t', skiprows=n_header, low_memory=False)
         df.rename(columns={'#CHROM': 'CHROM'}, inplace=True)
         return df
 
