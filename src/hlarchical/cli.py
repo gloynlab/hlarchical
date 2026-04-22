@@ -22,7 +22,7 @@ def get_parser():
     p1.add_argument('--genome_build', type=str, default='GRCh37', help='the genome build of the sample array data, must be the same as the reference panel')
 
     p2 = subparsers.add_parser("get-sample-features", help="get the features of the sample data for prediction")
-    p2.add_argument('--vcf', type=str, default='input_phased.vcf.gz', help='the phased sample data')
+    p2.add_argument('--vcf_phased', type=str, default='input_phased.vcf.gz', help='the phased sample data')
     p2.add_argument('--features', type=str, default='features_list.txt', help='the list of features used in the model training, generated using the make_features function')
     p2.add_argument('--with_ancestry', type=str, default='False', help='using ancestry as features to do the prediction')
     p2.add_argument('--ancestry_file', type=str, default=None, help='ancestry file with samples in the first column and ancestry info in the second column')
@@ -82,8 +82,9 @@ def main():
         ancestry_file = None
         features_file = 'features_list.txt'
         out_file = 'to_predict.txt'
+        sample_vcf_phased = sample_vcf.split('.vcf')[0] + '_phased_on_' + ref_vcf
         hla = Processor(with_ancestry=with_ancestry, ancestry_file=ancestry_file)
-        hla.get_sample_features(sample_vcf=sample_vcf, features_file=features_file, out_file=out_file)
+        hla.get_sample_features(sample_vcf=sample_vcf_phased, features_file=features_file, out_file=out_file)
 
         in_file = 'to_predict.txt'
         out_file = args.output
@@ -102,7 +103,7 @@ def main():
         genome_build = args.genome_build
         hla.phase_sample_on_reference(sample_vcf=sample_vcf, ref_vcf=ref_vcf, genome_build=genome_build)
     elif args.command == 'get-sample-features':
-        sample_vcf = args.vcf
+        sample_vcf = args.vcf_phased
         features_file = args.features
         ancestry_file = args.ancestry_file
         with_ancestry = True if args.with_ancestry.lower() in ['true', 'yes'] else False
