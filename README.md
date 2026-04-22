@@ -39,7 +39,7 @@ conda activate hlarchical
 # Predict HLA alleles with one line command using the trained model
 # (the input vcf must be on GRCh37 and indexed)
 
-hla easy-predict --vcf 1000G_array_sanger.vcf.gz
+hla easy-predict --vcf INPUT_GRCh37.vcf.gz
 
 # Predict HLA alleles for a new array dataset using the trained model step by step
 
