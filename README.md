@@ -39,7 +39,9 @@ conda activate hlarchical
 # Predict HLA alleles with one line command using the trained model
 # (the input vcf must be on GRCh37 and indexed)
 
-hla easy-predict --vcf INPUT_GRCh37.vcf.gz
+hla quick-predict --vcf INPUT_GRCh37.vcf.gz
+or
+hla quick-predict --txt INPUT_23andme.txt.gz
 
 #------------------------------------------------------------------
 

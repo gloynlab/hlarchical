@@ -12,8 +12,9 @@ def get_parser():
     parser = argparse.ArgumentParser(formatter_class=formatter_class)
     subparsers = parser.add_subparsers(dest='command', required=True)
 
-    p0 = subparsers.add_parser("easy-predict", help="a one-line command to predict HLA alleles using the trained model with default parameters")
+    p0 = subparsers.add_parser("quick-predict", help="a one-line command to predict HLA alleles using the trained model with default parameters")
     p0.add_argument('--vcf', type=str, default='input.vcf.gz', help='input vcf file of the sample data to be predicted, must be on GRCh37 (CHROM has no chr prefix)')
+    p0.add_argument('--txt', type=str, default=None, help='the input txt.gz file downloaded from 23andme, must be on GRCh37 (CHROM has no chr prefix)')
     p0.add_argument('--output', type=str, default='predicted.txt', help='the output file for the predicted HLA alleles')
 
     p1 = subparsers.add_parser("phase-sample-on-ref", help="phase the sample data on the reference panel")
@@ -71,9 +72,20 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.command == 'easy-predict':
+    if args.command == 'quick-predict':
+        txt_file = args.txt
+        if txt_file is not None:
+            if not os.path.exists(txt_file):
+                raise FileNotFoundError(f'The input txt file {txt_file} not found')
+            if not txt_file.endswith('.txt.gz'):
+                raise ValueError('The input txt file must be in .txt.gz format')
+            txt_to_vcf_23andme(in_file=txt_file)
+            sample_vcf = txt_file.split('.txt')[0] + '.vcf.gz'
+        else:
+            sample_vcf = args.vcf
+            if not os.path.exists(sample_vcf):
+                raise FileNotFoundError(f'The input vcf file {sample_vcf} not found')
         hla = Preprocessor()
-        sample_vcf = args.vcf
         ref_vcf = '1000G_REF_phased.vcf.gz'
         genome_build = 'GRCh37'
         hla.phase_sample_on_reference(sample_vcf=sample_vcf, ref_vcf=ref_vcf, genome_build=genome_build)

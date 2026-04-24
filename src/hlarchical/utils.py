@@ -155,3 +155,60 @@ def accuracy_avg_digit(accuracy, digits, average='micro'):
             acc = np.mean(mat[:, 0])
         A[d] = acc
     return A
+
+def txt_to_vcf_23andme(in_file, genome_build='GRCh37', chrom_hla='6'):
+    from .preprocess import Preprocessor
+    hla = Preprocessor()
+    fa_file = hla.get_genome_reference(genome_build)
+
+    D = {}
+    with open(fa_file) as f:
+        chrom = ''
+        seq = ''
+        for line in f:
+            if line.startswith('>'):
+                if chrom != '':
+                    if chrom == chrom_hla:
+                        D[chrom] = seq
+                chrom = line.strip().split(' ')[0][1:]
+                seq = ''
+            else:
+                seq += line.strip()
+        if chrom == chrom_hla:
+            D[chrom] = seq
+    for k in D:
+        print(f'get ref seq of chrom {k} from {fa_file}')
+
+    sample = in_file.split('.txt')[0].split('_')[0]
+    out_file = in_file.split('.txt')[0] + '.vcf.gz'
+    with gzip.open(in_file, 'rt') as f_in, gzip.open(out_file, 'wt') as f_out:
+        f_out.write('##fileformat=VCFv4.2\n')
+        f_out.write('##source=23andMe\n')
+        f_out.write(f'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{sample}\n')
+        for line in f_in:
+            if line.startswith('#'):
+                continue
+            parts = line.strip().split('\t')
+            if len(parts) < 4:
+                continue
+            chrom = parts[1]
+            pos = int(parts[2])
+            rsid = parts[0]
+            genotype = parts[3]
+            if chrom != chrom_hla:
+                continue
+            if genotype == '--':
+                continue
+            ref = genotype[0]
+            alt = genotype[1]
+            fm = '0/0'
+            if ref != alt:
+                fm = '0/1'
+            else:
+                if ref == D[chrom][pos-1]:
+                    fm = '0/0'
+                elif alt == D[chrom][pos-1]:
+                    fm = '1/1'
+
+            f_out.write(f'{chrom}\t{pos}\t{rsid}\t{ref}\t{alt}\t.\t.\t.\tGT\t{fm}\n')
+        print(f'{out_file} written successfully')
