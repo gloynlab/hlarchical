@@ -83,6 +83,7 @@ def main():
             sample_vcf = args.vcf
             if not os.path.exists(sample_vcf):
                 raise FileNotFoundError(f'The input vcf file {sample_vcf} not found')
+
         hla = Preprocessor()
         ref_vcf = '1000G_REF_phased.vcf.gz'
         genome_build = 'GRCh37'

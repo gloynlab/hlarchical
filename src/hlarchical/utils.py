@@ -214,3 +214,13 @@ def txt_to_vcf_23andme(in_file, genome_build='GRCh37', chrom_hla='6'):
         print(f'{out_file} written successfully')
     cmd = f'bgzip -f {out_file}; tabix -f -p vcf {out_file}.gz'
     subprocess.run(cmd, shell=True)
+
+def remove_chr_vcf(in_file, chr_map='chr_map.txt'):
+    out_file = in_file.split('.vcf')[0] + '_nochr.vcf.gz'
+    cmd = f"bcftools view -h {in_file} | grep '^##contig=<ID=chr' | sed -e 's/.*ID=//' -e 's/,.*//' | awk " + "'{print $1, substr($1, 4)}'" + f" > {chr_map}"
+    print(cmd)
+    subprocess.run(cmd, shell=True)
+    cmd = f'bcftools annotate --rename-chrs {chr_map} -Oz -o {out_file} {in_file}; tabix -p vcf -f {out_file}'
+    print(cmd)
+    subprocess.run(cmd, shell=True)
+
