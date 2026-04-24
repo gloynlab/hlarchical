@@ -15,7 +15,7 @@ def get_parser():
     p0 = subparsers.add_parser("quick-predict", help="a one-line command to predict HLA alleles using the trained model with default parameters")
     p0.add_argument('--vcf', type=str, default='input.vcf.gz', help='input vcf file of the sample data to be predicted, must be on GRCh37 (CHROM has no chr prefix)')
     p0.add_argument('--txt', type=str, default=None, help='the input txt file downloaded from 23andme, must be on GRCh37 (CHROM has no chr prefix)')
-    p0.add_argument('--output', type=str, default='predicted.txt', help='the output file for the predicted HLA alleles')
+    p0.add_argument('--output', type=str, default=None, help='the output file for the predicted HLA alleles, input_predicted.txt by default')
 
     p1 = subparsers.add_parser("phase-sample-on-ref", help="phase the sample data on the reference panel")
     p1.add_argument('--vcf', type=str, default='input.vcf.gz', help='input vcf file of the sample data to be predicted')
@@ -31,7 +31,7 @@ def get_parser():
 
     p3 = subparsers.add_parser("predict", help="predict HLA alleles using the trained model")
     p3.add_argument('--input', type=str, default='to_predict_without_ancestry.txt', help='the input file for prediction, generated using the get-sample-features command')
-    p3.add_argument('--output', type=str, default='predicted.txt', help='the output file for the predicted HLA alleles')
+    p3.add_argument('--output', type=str, default=None, help='the output file for the predicted HLA alleles, input_predicted.txt by default')
     p3.add_argument('--model_name', type=str, default='mlp', help='the name of the model to be used for prediction')
     p3.add_argument('--epoch', type=int, default=200, help='the epoch of the trained model to be used for prediction')
     p3.add_argument('--config_file', type=str, default='config.yaml', help='the config file used in the model training')
@@ -99,6 +99,8 @@ def main():
 
         in_file = 'to_predict.txt'
         out_file = args.output
+        if out_file is None:
+            out_file = sample_vcf.split('.vcf')[0] + '_predicted.txt'
         model_name = 'mlp'
         config_file = 'config.yaml'
         epoch = 200
@@ -125,6 +127,8 @@ def main():
     elif args.command == 'predict':
         in_file = args.input
         out_file = args.output
+        if out_file is None:
+            out_file = in_file.split('.vcf')[0] + '_predicted.txt'
         model_name = args.model_name
         config_file = args.config_file
         epoch = args.epoch
