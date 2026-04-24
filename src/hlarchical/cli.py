@@ -14,7 +14,7 @@ def get_parser():
 
     p0 = subparsers.add_parser("quick-predict", help="a one-line command to predict HLA alleles using the trained model with default parameters")
     p0.add_argument('--vcf', type=str, default='input.vcf.gz', help='input vcf file of the sample data to be predicted, must be on GRCh37 (CHROM has no chr prefix)')
-    p0.add_argument('--txt', type=str, default=None, help='the input txt.gz file downloaded from 23andme, must be on GRCh37 (CHROM has no chr prefix)')
+    p0.add_argument('--txt', type=str, default=None, help='the input txt file downloaded from 23andme, must be on GRCh37 (CHROM has no chr prefix)')
     p0.add_argument('--output', type=str, default='predicted.txt', help='the output file for the predicted HLA alleles')
 
     p1 = subparsers.add_parser("phase-sample-on-ref", help="phase the sample data on the reference panel")
@@ -77,8 +77,6 @@ def main():
         if txt_file is not None:
             if not os.path.exists(txt_file):
                 raise FileNotFoundError(f'The input txt file {txt_file} not found')
-            if not txt_file.endswith('.txt.gz'):
-                raise ValueError('The input txt file must be in .txt.gz format')
             txt_to_vcf_23andme(in_file=txt_file)
             sample_vcf = txt_file.split('.txt')[0] + '.vcf.gz'
         else:

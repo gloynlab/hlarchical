@@ -180,8 +180,8 @@ def txt_to_vcf_23andme(in_file, genome_build='GRCh37', chrom_hla='6'):
         print(f'get ref seq of chrom {k} from {fa_file}')
 
     sample = in_file.split('.txt')[0].split('_')[0]
-    out_file = in_file.split('.txt')[0] + '.vcf.gz'
-    with gzip.open(in_file, 'rt') as f_in, gzip.open(out_file, 'wt') as f_out:
+    out_file = in_file.split('.txt')[0] + '.vcf'
+    with open(in_file) as f_in, open(out_file, 'w') as f_out:
         f_out.write('##fileformat=VCFv4.2\n')
         f_out.write('##source=23andMe\n')
         f_out.write(f'#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t{sample}\n')
@@ -212,3 +212,5 @@ def txt_to_vcf_23andme(in_file, genome_build='GRCh37', chrom_hla='6'):
 
             f_out.write(f'{chrom}\t{pos}\t{rsid}\t{ref}\t{alt}\t.\t.\t.\tGT\t{fm}\n')
         print(f'{out_file} written successfully')
+    cmd = f'bgzip -f {out_file}; tabix -f -p vcf {out_file}.gz'
+    subprocess.run(cmd, shell=True)
