@@ -232,7 +232,6 @@ class Summary():
                 for gene in D[sample]:
                     for gt in D[sample][gene]:
                         D[sample][gene][gt] = sorted(D[sample][gene][gt], key=lambda x:x[1], reverse=True)
-                        #print([sample, gene, gt] + D[sample][gene][gt])
 
             L = []
             for sample in D:
@@ -252,7 +251,7 @@ class Summary():
             df = pd.DataFrame(L, columns = ['SampleID', 'HLA', 'Allele1', 'Allele2'])
             df.to_csv(out_file, header=True, index=False, sep='\t')
 
-        elif from_tool == 'hla-typing':
+        elif from_tool == 'hla-typing-stanford':
             # internal use only
             df = pd.read_excel(in_file, dtype=str, skiprows=2)
             header = ['SampleID', 'Race', 'Gender', 'Disease', 'HLA', 'Allele1', 'Allele2']
@@ -291,8 +290,72 @@ class Summary():
             df = pd.DataFrame(L)
             df.columns = header
             df.to_csv(out_file, header=True, index=False, sep='\t')
+        elif from_tool == 'hla-typing-iidp':
+            df = pd.read_table(in_file, header=0, low_memory=False)
+            L = []
+            for n in range(df.shape[0]):
+                rrid = df['RRID'].iloc[n].split(':')[-1]
+                gender = df['gender'].iloc[n]
+                race = df['race'].iloc[n]
+                ethnicity = df['ethnicity'].iloc[n]
+                age = df['age'].iloc[n]
+                height = df['height'].iloc[n]
+                weight = df['weight'].iloc[n]
+                bmi = df['bmi'].iloc[n]
+
+                for i, k in enumerate([gender, race, ethnicity]):
+                    try:
+                        k = int(k)
+                        if i == 0:
+                            if k == 1:
+                                gender = 'male'
+                            elif k == 2:
+                                gender = 'female'
+                    except:
+                        k = '.'
+                for k in [age, height, weight, bmi]:
+                    try:
+                        k = float(k)
+                    except:
+                        k = '.'
+
+                hla_a_a1 = self._fix_hla_allele_iidp(df['hla_a'].iloc[n], self.HLA[0])
+                hla_a_a2 = self._fix_hla_allele_iidp(df['hla_a_1'].iloc[n], self.HLA[0])
+                L.append([rrid, gender, race, ethnicity, age, height, weight, bmi, self.HLA[0], hla_a_a1, hla_a_a2])
+
+                hla_b_a1 = self._fix_hla_allele_iidp(df['hla_b'].iloc[n], self.HLA[1])
+                hla_b_a2 = self._fix_hla_allele_iidp(df['hla_b_1'].iloc[n], self.HLA[1])
+                L.append([rrid, gender, race, ethnicity, age, height, weight, bmi, self.HLA[1], hla_b_a1, hla_b_a2])
+
+                hla_c_a1 = self._fix_hla_allele_iidp(df['hla_c'].iloc[n], self.HLA[2])
+                hla_c_a2 = self._fix_hla_allele_iidp(df['hla_c_1'].iloc[n], self.HLA[2])
+                L.append([rrid, gender, race, ethnicity, age, height, weight, bmi, self.HLA[2], hla_c_a1, hla_c_a2])
+
+                hla_dpa1_a1 = '.'
+                hla_dpa1_a2 = '.'
+                L.append([rrid, gender, race, ethnicity, age, height, weight, bmi, self.HLA[3], '.', '.'])
+
+                hla_dpb1_a1 = '.'
+                hla_dpb1_a2 = '.'
+                L.append([rrid, gender, race, ethnicity, age, height, weight, bmi, self.HLA[4], '.', '.'])
+
+                hla_dqa1_a1 = '.'
+                hla_dqa1_a2 = '.'
+                L.append([rrid, gender, race, ethnicity, age, height, weight, bmi, self.HLA[5], '.', '.'])
+
+                hla_dqb1_a1 = self._fix_hla_allele_iidp(df['hla_dq'].iloc[n], self.HLA[6])
+                hla_dqb1_a2 = self._fix_hla_allele_iidp(df['hla_dq_1'].iloc[n], self.HLA[6])
+                L.append([rrid, gender, race, ethnicity, age, height, weight, bmi, self.HLA[6], hla_dqb1_a1, hla_dqb1_a2])
+
+                hla_drb1_a1 = self._fix_hla_allele_iidp(df['hla_dr'].iloc[n], self.HLA[7])
+                hla_drb1_a2 = self._fix_hla_allele_iidp(df['hla_dr_1'].iloc[n], self.HLA[7])
+                L.append([rrid, gender, race, ethnicity, age, height, weight, bmi, self.HLA[7], hla_drb1_a1, hla_drb1_a2])
+
+            df = pd.DataFrame(L)
+            df.columns = ['RRID', 'Gender', 'Race', 'Ethnicity', 'Age', 'Height', 'Weight', 'BMI', 'HLA', 'Allele1', 'Allele2']
+            df.to_csv(out_file, header=True, index=False, sep='\t')
         else:
-            raise ValueError(f'Unsupported tool: {from_tool}. Supported tools are: snp2hla, deep-hla, hibag, hla-hd, xhla, opti-type, hla-typing.')
+            raise ValueError(f'Unsupported tool: {from_tool}.')
 
     def _fix_sample_name_by_fam(self, fam_file):
         D1 = {}
@@ -317,6 +380,26 @@ class Summary():
                     k2 = f'{k}.{n+1}'
                     D2[k2] = D1[k][n]
         return D2
+
+    def _fix_hla_allele_iidp(self, allele, hla):
+        allele = str(allele)
+        if allele.find(':') != -1:
+            allele = allele.split(':')[0]
+        if allele.startswith('A') or allele.startswith('B') or allele.startswith('C'):
+            allele = allele[1:]
+        try:
+            a = int(allele)
+            if a == 0:
+                allele = '.'
+            elif len(allele) == 1:
+                allele = f'0{allele}'
+            elif len(allele) == 4:
+                allele = allele[0:2]
+        except:
+            allele = '.'
+        if allele not in ['.']:
+            allele = f'{hla}:{allele}'
+        return allele
 
     def merge_hlarchical_tables(self, out_file='HLA_OMNI-GDA_withGAP.txt', digits=[2, 4], tools=['SNP2HLA', 'HIBAG', 'hlarchical'],
                                 Ancestry=['European', 'Asian', 'African', 'Hispanic', 'MA'], ancestry_file='GAP_OMNI-GDA.txt'):
@@ -360,7 +443,7 @@ class Summary():
 
         Ls = []
         cols = ['SampleID', 'SampleName', 'Array', 'Source', 'Sex', 'Batch', 'Project', 'RRID', 'QC', 'Extra', 'Superpopulation', 'Population', 'HLA']
-        sa = sorted(SA.items(), key=lambda x: x[0])
+        sa = sorted(SA.items(), key=lambda x: [x[1][0], x[0]])
         sample_ids = [item[0] for item in sa]
         for sample_id in sample_ids:
             v = SA.get(sample_id, ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.'])
